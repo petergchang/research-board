@@ -505,12 +505,25 @@ input[type=password]{font:inherit;color:var(--ink);background:var(--surface);bor
 .drawer .thread h3 button{color:var(--accent);font-weight:600;font-size:14px;text-align:left}
 .drawer .thread .cmts{margin-top:2px;padding-top:0;border-top:0}
 .drawer .thread .cmts h4{display:none}
+mark.hl{background:var(--accent-soft);color:inherit;border-bottom:2px solid var(--accent-line);padding:0 1px;border-radius:2px;cursor:pointer}
+mark.hl:hover{background:var(--accent-line)}
+.cquote{display:block;text-align:left;font:inherit;font-size:12.5px;line-height:1.35;color:var(--ink-2);border-left:3px solid var(--accent-line);background:var(--accent-soft);padding:3px 8px;margin:6px 0 2px;border-radius:0 6px 6px 0;cursor:pointer;max-width:100%}
+.cquote:hover{color:var(--ink)}
+.cquote.pending{display:flex;gap:8px;align-items:center;cursor:default;margin:0}
+.cquote.pending span{flex:1}
+.cquote.pending button{font-size:15px;line-height:1;color:var(--ink-3)} .cquote.pending button:hover{color:var(--ink)}
+#selbtn{position:fixed;z-index:26;padding:6px 12px;border-radius:7px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;box-shadow:var(--shadow)}
+#selbtn::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--ink);border-bottom:0}
+.flash{animation:rbflash 1.4s ease-out}
+@keyframes rbflash{0%{background:var(--warn-soft);box-shadow:0 0 0 3px var(--warn-soft)}100%{}}
+.cmt.flash{background:var(--warn-soft)}
 </style>
 
 </head>
 <body>
 <div class="app" id="app"></div>
 <div id="drawerhost"></div>
+<button id="selbtn" hidden data-action="anchor-comment">Comment on this</button>
 <div id="overlay"></div>
 <div id="toast" hidden class="toast"></div>
 
@@ -1202,6 +1215,7 @@ function renderDayPanel(){
     <div class="inside">${commentsBlock('day:' + d)}</div>
     <div class="foot"><span>${esc(fmt(d, true))}</span><button data-action="close-day">Close</button></div></section>`;
   typeset(host);
+  if (typeof applyHighlights === 'function') applyHighlights(host);
   applySelection();
 }
 function openDay(d, scroll){
@@ -1769,7 +1783,7 @@ function fmtWhen(iso){ const d = new Date(iso); if (isNaN(d)) return ''; return 
 function cpill(target){ const n = openCommentsFor(target).length; return n ? `<span class="cpill" title="${n} open ${n === 1 ? 'comment' : 'comments'}">${n}</span>` : ''; }
 function cbadgeSvg(target, cx, cy){ const n = openCommentsFor(target).length; return n ? `<g class="cbadge" aria-hidden="true"><circle cx="${cx}" cy="${cy}" r="9"></circle><text x="${cx}" y="${cy + 3.5}" text-anchor="middle">${n}</text></g>` : ''; }
 function commentHtml(target, c){
-  return `<li class="cmt${c.resolved ? ' resolved' : ''}" data-cid="${esc(c.id)}"><div class="cmt-head"><b>${esc(c.by)}</b><span>${esc(fmtWhen(c.date))}</span>${c.resolved ? '<span>· resolved</span>' : ''}<span class="cmt-tools"><button data-action="cmt-resolve" data-target="${esc(target)}" data-cid="${esc(c.id)}">${c.resolved ? 'Reopen' : 'Resolve'}</button><button data-action="cmt-delete" data-target="${esc(target)}" data-cid="${esc(c.id)}">Delete</button></span></div>${md(c.text, 'cmt:' + c.id + ':' + target)}</li>`;
+  return `<li class="cmt${c.resolved ? ' resolved' : ''}" data-cid="${esc(c.id)}"><div class="cmt-head"><b>${esc(c.by)}</b><span>${esc(fmtWhen(c.date))}</span>${c.resolved ? '<span>· resolved</span>' : ''}<span class="cmt-tools"><button data-action="cmt-resolve" data-target="${esc(target)}" data-cid="${esc(c.id)}">${c.resolved ? 'Reopen' : 'Resolve'}</button><button data-action="cmt-delete" data-target="${esc(target)}" data-cid="${esc(c.id)}">Delete</button></span></div>${c.anchor ? `<button type="button" class="cquote" data-action="show-anchor" data-target="${esc(target)}" data-cid="${esc(c.id)}" title="Show this passage">“${esc(shortQuote(c.anchor.quote))}”</button>` : ''}${md(c.text, 'cmt:' + c.id + ':' + target)}</li>`;
 }
 function commentsBlock(target){
   const all = commentsOf(target); const open = all.filter(c => !c.resolved), res = all.filter(c => c.resolved);
@@ -1778,11 +1792,11 @@ function commentsBlock(target){
   const name = myName();
   return `<div class="cmts" data-target="${esc(target)}"><h4>Comments${all.length ? ` <span class="faint">${open.length} open</span>` : ''}${res.length ? `<button type="button" data-action="cmt-showres" data-target="${esc(target)}">${show ? 'hide' : 'show'} ${res.length} resolved</button>` : ''}</h4>
     ${list.length ? `<ul>${list.map(c => commentHtml(target, c)).join('')}</ul>` : ''}
-    <form class="cmtform" data-target="${esc(target)}"><textarea name="text" placeholder="${all.length ? 'Reply…' : 'Leave a comment…'}"></textarea><div class="row2">${name ? `<span>Posting as <b>${esc(name)}</b></span><button type="button" class="link" data-action="cmt-name">change</button>` : `<input type="text" name="by" placeholder="Your name" required>`}<span class="faint">Ctrl/⌘+Enter posts</span><button type="submit" class="btn small primary">Post</button></div></form></div>`;
+    <form class="cmtform" data-target="${esc(target)}">${pendingAnchor && pendingAnchor.target === target ? `<div class="cquote pending"><span>On: “${esc(shortQuote(pendingAnchor.quote))}”</span><button type="button" data-action="anchor-clear" title="Comment on the whole day instead">×</button></div>` : ''}<textarea name="text" placeholder="${pendingAnchor && pendingAnchor.target === target ? 'Your comment on that passage…' : all.length ? 'Reply…' : 'Leave a comment…'}"></textarea><div class="row2">${name ? `<span>Posting as <b>${esc(name)}</b></span><button type="button" class="link" data-action="cmt-name">change</button>` : `<input type="text" name="by" placeholder="Your name" required>`}<span class="faint">Ctrl/⌘+Enter posts</span><button type="submit" class="btn small primary">Post</button></div></form></div>`;
 }
 function refreshCmts(target){
   document.querySelectorAll('.cmts').forEach(el => { if (el.dataset.target === target) el.outerHTML = commentsBlock(target); });
-  renderDrawer(); updateHeaderCount();
+  renderDrawer(); updateHeaderCount(); applyHighlights(document.getElementById('panel-logs'));
 }
 function updateHeaderCount(){ const b = document.querySelector('.top .cmtbtn'); if (b){ const n = openCommentCount(); b.innerHTML = 'Comments' + (n ? `<span class="cpill">${n}</span>` : ''); } }
 function postComment(f){
@@ -1790,7 +1804,9 @@ function postComment(f){
   let name = myName();
   if (!name){ name = f.by ? f.by.value.trim() : ''; if (!name){ if (f.by) f.by.focus(); return; } try { localStorage.setItem('rb.name', name); } catch(e){} }
   state.comments = state.comments || {};
-  (state.comments[target] = state.comments[target] || []).push({id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), by: name, text, date: nowIso(), updated: nowIso()});
+  const c = {id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), by: name, text, date: nowIso(), updated: nowIso()};
+  if (pendingAnchor && pendingAnchor.target === target){ c.anchor = {src: pendingAnchor.src, quote: pendingAnchor.quote, before: pendingAnchor.before, after: pendingAnchor.after}; pendingAnchor = null; }
+  (state.comments[target] = state.comments[target] || []).push(c);
   commit(); refreshCmts(target);
 }
 function targetLabel(t){
@@ -1820,6 +1836,88 @@ function drawerHtml(){
 }
 function renderDrawer(){ const h = document.getElementById('drawerhost'); if (h) h.innerHTML = drawerHtml(); const b = document.querySelector('.top .cmtbtn'); if (b) b.setAttribute('aria-pressed', String(drawerOpen)); }
 
+
+// ---------- anchored comments: select a passage in a day's note or entry, comment on it ----------
+let pendingAnchor = null, pendingSel = null, selTimer = null;
+function shortQuote(q){ q = String(q || '').replace(/\s+/g, ' ').trim(); return q.length > 140 ? q.slice(0, 137) + '…' : q; }
+function textNodesOf(root){ const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes = []; let n; while ((n = w.nextNode())) nodes.push(n); return nodes; }
+function textMap(root){ const nodes = textNodesOf(root); const starts = []; let text = ''; for (const n of nodes){ starts.push(text.length); text += n.data; } return {nodes, starts, text}; }
+function boundaryPos(tm, container, offset){
+  if (container.nodeType === 3){ const k = tm.nodes.indexOf(container); return k < 0 ? null : tm.starts[k] + offset; }
+  const kids = container.childNodes;
+  for (let j = offset; j < kids.length; j++){ const k = tm.nodes.findIndex(n => kids[j] === n || (kids[j].contains && kids[j].contains(n))); if (k >= 0) return tm.starts[k]; }
+  return tm.text.length;
+}
+function selectionInfo(box, range){
+  const tm = textMap(box);
+  let a = boundaryPos(tm, range.startContainer, range.startOffset), b = boundaryPos(tm, range.endContainer, range.endOffset);
+  if (a == null || b == null) return null; if (a > b){ const t = a; a = b; b = t; }
+  while (a < b && /\s/.test(tm.text[a])) a++; while (b > a && /\s/.test(tm.text[b - 1])) b--;
+  if (b - a < 1) return null; if (b - a > 400) b = a + 400;
+  return {quote: tm.text.slice(a, b), before: tm.text.slice(Math.max(0, a - 32), a), after: tm.text.slice(b, b + 32)};
+}
+function updateSelBtn(){
+  const btn = document.getElementById('selbtn'); if (!btn) return;
+  const sel = document.getSelection();
+  if (!sel || sel.isCollapsed || !sel.rangeCount || dbState !== 'ready' || view !== 'logs' || !cal.open){ btn.hidden = true; pendingSel = null; return; }
+  const range = sel.getRangeAt(0); const node = range.commonAncestorContainer; const el = node.nodeType === 1 ? node : node.parentElement;
+  const box = el && el.closest('#panel-logs .md[data-src]'); if (!box){ btn.hidden = true; pendingSel = null; return; }
+  const info = selectionInfo(box, range); if (!info){ btn.hidden = true; pendingSel = null; return; }
+  pendingSel = {target: 'day:' + cal.open, src: box.dataset.src, quote: info.quote, before: info.before, after: info.after};
+  const r = range.getBoundingClientRect();
+  btn.style.left = Math.max(8, Math.min(window.innerWidth - 130, r.left + r.width / 2 - 55)) + 'px';
+  btn.style.top = Math.max(8, r.top - 38) + 'px';
+  btn.hidden = false;
+}
+function startAnchoredComment(){
+  if (!pendingSel) return;
+  pendingAnchor = pendingSel; pendingSel = null;
+  const btn = document.getElementById('selbtn'); if (btn) btn.hidden = true;
+  const sel = document.getSelection(); if (sel) sel.removeAllRanges();
+  refreshCmts(pendingAnchor.target);
+  const form = document.querySelector('#panel-logs .cmtform textarea');
+  if (form){ form.scrollIntoView({block: 'center', behavior: prefersReduced() ? 'auto' : 'smooth'}); setTimeout(() => form.focus(), 250); }
+}
+function clearHighlights(root){
+  root.querySelectorAll('mark.hl').forEach(mk => { const p = mk.parentNode; while (mk.firstChild) p.insertBefore(mk.firstChild, mk); p.removeChild(mk); p.normalize(); });
+}
+function markQuote(box, anchor, cid){
+  const tm = textMap(box); const q = anchor.quote; if (!q) return false;
+  let best = -1, bestScore = -1, i = tm.text.indexOf(q); const bf = anchor.before || '', af = anchor.after || '';
+  while (i >= 0){
+    let sc = 0;
+    for (let k = 1; k <= bf.length && i - k >= 0 && tm.text[i - k] === bf[bf.length - k]; k++) sc++;
+    for (let k = 0; k < af.length && tm.text[i + q.length + k] === af[k]; k++) sc++;
+    if (sc > bestScore){ bestScore = sc; best = i; }
+    i = tm.text.indexOf(q, i + 1);
+  }
+  if (best < 0) return false;
+  const a = best, b = best + q.length;
+  tm.nodes.forEach((n, k) => {
+    const s = tm.starts[k], e = s + n.data.length; const la = Math.max(a, s) - s, lb = Math.min(b, e) - s; if (lb <= la) return;
+    let t = n; if (lb < n.data.length) t.splitText(lb); if (la > 0) t = t.splitText(la);
+    const mk = document.createElement('mark'); mk.className = 'hl'; mk.dataset.cid = cid; mk.dataset.action = 'show-comment'; mk.title = 'Show the comment';
+    t.parentNode.insertBefore(mk, t); mk.appendChild(t);
+  });
+  return true;
+}
+function applyHighlights(root){
+  if (!root || !state || dbState !== 'ready') return;
+  clearHighlights(root);
+  if (!cal.open) return;
+  const cs = openCommentsFor('day:' + cal.open).filter(c => c.anchor);
+  root.querySelectorAll('.md[data-src]').forEach(box => { for (const c of cs) if (c.anchor.src === box.dataset.src) markQuote(box, c.anchor, c.id); });
+}
+function flash(el){ if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); el.scrollIntoView({block: 'center', behavior: prefersReduced() ? 'auto' : 'smooth'}); }
+function showComment(cid){ const el = document.querySelector('#panel-logs .cmt[data-cid="' + CSS.escape(cid) + '"]') || document.querySelector('.cmt[data-cid="' + CSS.escape(cid) + '"]'); flash(el); }
+function showAnchor(target, cid){
+  const find = () => document.querySelector('#panel-logs mark.hl[data-cid="' + CSS.escape(cid) + '"]');
+  let mk = find(); if (mk){ flash(mk); return; }
+  if (target.startsWith('day:')){ gotoTarget(target); setTimeout(() => { mk = find(); if (mk) flash(mk); else toast('That passage is no longer in the note.'); }, 200); }
+}
+document.addEventListener('selectionchange', () => { clearTimeout(selTimer); selTimer = setTimeout(updateSelBtn, 150); });
+document.addEventListener('scroll', () => { const btn = document.getElementById('selbtn'); if (btn && !btn.hidden){ btn.hidden = true; } }, true);
+document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('#selbtn')) e.preventDefault(); });
 // ---------- events ----------
 let toastTimer = null;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
@@ -1889,6 +1987,10 @@ document.addEventListener('click', e => {
     if (a === 'note-edit'){ noteEditing = true; renderDayPanel(); const t = $('#noteedit'); if (t) t.focus(); return; }
     if (a === 'note-cancel'){ noteEditing = false; renderDayPanel(); if (pendingRender) render(); return; }
     if (a === 'note-save'){ const t = $('#noteedit'); const d = act.dataset.day; if (t && d){ const txt = t.value.trim(); const notes = notesOf(); notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note saved.'); return; }
+    if (a === 'anchor-comment'){ startAnchoredComment(); return; }
+    if (a === 'anchor-clear'){ pendingAnchor = null; refreshCmts(act.closest('.cmtform').dataset.target); return; }
+    if (a === 'show-comment'){ showComment(act.dataset.cid); return; }
+    if (a === 'show-anchor'){ showAnchor(act.dataset.target, act.dataset.cid); return; }
     if (a === 'toggle-drawer'){ drawerOpen = !drawerOpen; renderDrawer(); return; }
     if (a === 'close-drawer'){ drawerOpen = false; renderDrawer(); return; }
     if (a === 'goto-target'){ gotoTarget(act.dataset.target); return; }
