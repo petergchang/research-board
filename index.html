@@ -216,7 +216,29 @@ textarea.outline{font-family:var(--mono);font-size:13px;line-height:1.5;min-heig
 .daynote{padding:6px 26px 0}
 .daynote textarea{min-height:160px;font-size:15px;line-height:1.5}
 .notebody{font-family:var(--display);font-size:16.5px;line-height:1.5;max-width:66ch}
-.notebody p + p{margin-top:9px}
+.notebody .md{font-size:16.5px}
+.notebody .md > * + *{margin-top:9px}
+.md{font-size:14.5px;line-height:1.5}
+.md > * + *{margin-top:6px}
+.md p{margin:0}
+.md h1,.md h2,.md h3{font-family:var(--display);font-weight:600;line-height:1.25}
+.md > h1:not(:first-child),.md > h2:not(:first-child),.md > h3:not(:first-child){margin-top:12px}
+.md h1{font-size:1.3em} .md h2{font-size:1.15em} .md h3{font-size:1.05em}
+.md ul{list-style:disc;padding-left:22px;display:grid;gap:2px}
+.md ol{list-style:decimal;padding-left:26px;display:grid;gap:2px}
+.md li > ul,.md li > ol{margin-top:2px}
+.md li.task{list-style:none;margin-left:-20px}
+.md li.task label{display:inline-flex;gap:7px;align-items:baseline;cursor:pointer}
+.md li.task input{width:auto;margin:0;vertical-align:-1px}
+.md li.task input:checked + span{color:var(--ink-3);text-decoration:line-through}
+.md code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.md pre{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:8px 10px;border-radius:8px;overflow-x:auto;white-space:pre}
+.md pre code{background:none;padding:0}
+.md blockquote{border-left:3px solid var(--line);padding-left:10px;color:var(--ink-2)}
+.md hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+.md a{color:var(--accent)}
+.md b{font-weight:600}
+.daynote .tools code{font-family:var(--mono);font-size:11.5px;background:var(--surface-2);padding:0 4px;border-radius:3px}
 .daynote .tools{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12.5px}
 .filters{display:flex;gap:6px;margin-bottom:10px}
 .fbtn{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;color:var(--ink-2)}
@@ -531,6 +553,82 @@ const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-re
 
 function typeset(el){ if (el && window.MathJax && window.__mjReady && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(() => {}); }
 window.__typesetAll = () => { document.querySelectorAll('.panel, .caption, .deep').forEach(typeset); };
+
+// ---------- a small Markdown renderer for notes, log entries and comments ----------
+// Supports: paragraphs (single newlines break lines), # ## ### headings, - * + bullets, 1. numbered,
+// nesting by indentation (2 spaces or a tab), - [ ] / - [x] tasks, **bold**, *italic*, `code`, ``` fences,
+// > quotes, --- rules, [text](http…) links, ~~strike~~. TeX in \( \) and \[ \] is left for MathJax.
+function mdInline(s){
+  const parts = String(s).split(/(`[^`\n]*`)/);
+  return parts.map((p, k) => {
+    if (k % 2 === 1) return '<code>' + esc(p.slice(1, -1)) + '</code>';
+    let t = esc(p);
+    t = t.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/__([^_\n]+)__/g, '<b>$1</b>');
+    t = t.replace(/(^|[^*\w\\])\*([^*\n]+)\*(?![*\w])/g, '$1<i>$2</i>').replace(/(^|[^_\w\\])_([^_\n]+)_(?![_\w])/g, '$1<i>$2</i>');
+    t = t.replace(/~~([^~\n]+)~~/g, '<s>$1</s>');
+    return t;
+  }).join('');
+}
+function md(src, ref){
+  const lines = String(src || '').replace(/\r\n?/g, '\n').split('\n');
+  const out = []; let i = 0, taskN = 0;
+  const LI = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
+  const indentOf = ws => ws.replace(/\t/g, '  ').length;
+  const item = text => {
+    const m = text.match(/^\[( |x|X)\]\s*(.*)$/);
+    if (m){ const n = taskN++; return `<li class="task"><label><input type="checkbox" ${m[1] !== ' ' ? 'checked' : ''} data-task="${n}" ${ref ? '' : 'disabled'}> <span>${mdInline(m[2])}</span></label></li>`; }
+    return '<li>' + mdInline(text) + '</li>';
+  };
+  function list(baseIndent){
+    // parses list items at indentation >= baseIndent until a non-list line; returns html
+    let html = ''; let type = null; let open = 0; let lastIndent = baseIndent; let pendingClose = '';
+    const stack = []; // [{indent, type}]
+    const closeTo = n => { while (stack.length > n){ const s = stack.pop(); html += '</li></' + s.type + '>'; } };
+    while (i < lines.length){
+      const m = lines[i].match(LI);
+      if (!m){
+        // continuation line: indented text belongs to the previous item
+        if (stack.length && lines[i].trim() && indentOf(lines[i].match(/^\s*/)[0]) > stack[stack.length - 1].indent){ html = html.replace(/<\/li>$/, '') ; html += '<br>' + mdInline(lines[i].trim()) + '</li>'; i++; continue; }
+        break;
+      }
+      const ind = indentOf(m[1]); const t = /^\d/.test(m[2]) ? 'ol' : 'ul';
+      if (!stack.length){ if (ind < baseIndent) break; stack.push({indent: ind, type: t}); html += '<' + t + '>' + item(m[3]); i++; continue; }
+      const top = stack[stack.length - 1];
+      if (ind > top.indent){ stack.push({indent: ind, type: t}); html = html.replace(/<\/li>$/, ''); html += '<' + t + '>' + item(m[3]); i++; continue; }
+      while (stack.length > 1 && ind < stack[stack.length - 1].indent) { const s = stack.pop(); html += '</' + s.type + '></li>'; }
+      const cur = stack[stack.length - 1];
+      if (t !== cur.type){ html += '</' + cur.type + '>'; cur.type = t; html += '<' + t + '>' + item(m[3]); i++; continue; }
+      html += item(m[3]); i++;
+    }
+    while (stack.length){ const s = stack.pop(); html += '</' + s.type + '>' + (stack.length ? '</li>' : ''); }
+    return html;
+  }
+  while (i < lines.length){
+    const L = lines[i];
+    if (!L.trim()){ i++; continue; }
+    if (/^```/.test(L)){ const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; out.push('<pre><code>' + esc(buf.join('\n')) + '</code></pre>'); continue; }
+    let m;
+    if ((m = L.match(/^(#{1,3})\s+(.*)$/))){ out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++; continue; }
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(L)){ out.push('<hr>'); i++; continue; }
+    if (/^>\s?/.test(L)){ const buf = []; while (i < lines.length && /^>\s?/.test(lines[i])) buf.push(lines[i++].replace(/^>\s?/, '')); out.push('<blockquote>' + md(buf.join('\n')) + '</blockquote>'); continue; }
+    if (LI.test(L)){ out.push(list(0)); continue; }
+    const buf = [];
+    while (i < lines.length && lines[i].trim() && !LI.test(lines[i]) && !/^(#{1,3}\s|```|>\s?|\s*(-{3,}|\*{3,})\s*$)/.test(lines[i])) buf.push(lines[i++]);
+    out.push('<p>' + buf.map(x => mdInline(x.trim())).join('<br>') + '</p>');
+  }
+  return `<div class="md"${ref ? ` data-src="${esc(ref)}"` : ''}>${out.join('')}</div>`;
+}
+// plain first line of a markdown text, for previews
+function mdPlain(src){
+  const line = String(src || '').split('\n').find(x => x.trim()) || '';
+  return line.replace(/^\s*(#{1,3}\s+|>\s?|([-*+]|\d+[.)])\s+(\[( |x|X)\]\s*)?)/, '').replace(/[*_`~]+/g, '');
+}
+// flip the n-th task checkbox in a markdown source
+function mdToggleTask(src, n, checked){
+  let k = -1;
+  return String(src).split('\n').map(line => { const m = line.match(/^(\s*([-*+]|\d+[.)])\s+)\[( |x|X)\](.*)$/); if (!m) return line; k++; return k === n ? m[1] + '[' + (checked ? 'x' : ' ') + ']' + m[4] : line; }).join('\n');
+}
 
 // ---------- the model tree, flattened into reference entries ----------
 function buildRefs(){
@@ -1049,7 +1147,7 @@ function logEntryHtml(l){
                        : `<span class="etools"><button data-action="log-edit" data-id="${esc(l.id)}">Edit</button><button data-action="log-remove-ask" data-id="${esc(l.id)}">Delete</button></span>`;
   return `<li class="entry node" data-id="${esc(l.id)}">
     <div class="entry-head"><span class="kind ${esc(l.kind)}">${esc(l.kind)}</span><span class="date">${esc(fmt(l.date, true))}</span></div>
-    <p class="text">${esc(l.text)}</p>
+    <div class="text">${md(l.text, 'log:' + l.id)}</div>
     ${edges ? `<div class="edgeline">${edges}</div>` : ''}
     <div class="entry-foot">${tools}</div>
   </li>`;
@@ -1076,7 +1174,7 @@ function renderLogsView(){
   const grid = cells.map(d => {
     if (!d) return `<div class="day blank"></div>`;
     const note = notes[d]; const es = dayEntries(d);
-    const ex = note && note.text ? note.text.split('\n').find(x => x.trim()) || '' : '';
+    const ex = note && note.text ? mdPlain(note.text) : '';
     const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '');
     return `<div class="day node${d === TODAY ? ' today' : ''}${note && note.text ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" aria-label="${esc(longDate(d))}${note ? ', has a note' : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${ex ? `<span class="ex">${esc(ex)}</span>` : ''}${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
   }).join('');
@@ -1093,8 +1191,8 @@ function renderDayPanel(){
   const note = notesOf()[d]; const es = dayEntries(d);
   const hasText = !!(note && note.text);
   const noteHtml = (noteEditing || !hasText)
-    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<span class="faint">Plain text; blank lines make paragraphs.</span></div>`
-    : `<div class="notebody">${note.text.split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
+    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents.</span></div>`
+    : `<div class="notebody">${md(note.text, 'note:' + d)}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
   host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}</h2></header>
     <div class="daynote">${noteHtml}</div>
     <div class="inside"><div class="label"><span>Logged against the plan this day</span><span></span></div>
@@ -1103,6 +1201,7 @@ function renderDayPanel(){
     </div>
     <div class="inside">${commentsBlock('day:' + d)}</div>
     <div class="foot"><span>${esc(fmt(d, true))}</span><button data-action="close-day">Close</button></div></section>`;
+  typeset(host);
   applySelection();
 }
 function openDay(d, scroll){
@@ -1670,7 +1769,7 @@ function fmtWhen(iso){ const d = new Date(iso); if (isNaN(d)) return ''; return 
 function cpill(target){ const n = openCommentsFor(target).length; return n ? `<span class="cpill" title="${n} open ${n === 1 ? 'comment' : 'comments'}">${n}</span>` : ''; }
 function cbadgeSvg(target, cx, cy){ const n = openCommentsFor(target).length; return n ? `<g class="cbadge" aria-hidden="true"><circle cx="${cx}" cy="${cy}" r="9"></circle><text x="${cx}" y="${cy + 3.5}" text-anchor="middle">${n}</text></g>` : ''; }
 function commentHtml(target, c){
-  return `<li class="cmt${c.resolved ? ' resolved' : ''}" data-cid="${esc(c.id)}"><div class="cmt-head"><b>${esc(c.by)}</b><span>${esc(fmtWhen(c.date))}</span>${c.resolved ? '<span>· resolved</span>' : ''}<span class="cmt-tools"><button data-action="cmt-resolve" data-target="${esc(target)}" data-cid="${esc(c.id)}">${c.resolved ? 'Reopen' : 'Resolve'}</button><button data-action="cmt-delete" data-target="${esc(target)}" data-cid="${esc(c.id)}">Delete</button></span></div><p>${esc(c.text)}</p></li>`;
+  return `<li class="cmt${c.resolved ? ' resolved' : ''}" data-cid="${esc(c.id)}"><div class="cmt-head"><b>${esc(c.by)}</b><span>${esc(fmtWhen(c.date))}</span>${c.resolved ? '<span>· resolved</span>' : ''}<span class="cmt-tools"><button data-action="cmt-resolve" data-target="${esc(target)}" data-cid="${esc(c.id)}">${c.resolved ? 'Reopen' : 'Resolve'}</button><button data-action="cmt-delete" data-target="${esc(target)}" data-cid="${esc(c.id)}">Delete</button></span></div>${md(c.text, 'cmt:' + c.id + ':' + target)}</li>`;
 }
 function commentsBlock(target){
   const all = commentsOf(target); const open = all.filter(c => !c.resolved), res = all.filter(c => c.resolved);
@@ -1834,6 +1933,14 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('change', e => {
+  if (e.target.matches && e.target.matches('.md input[data-task]')){
+    const box = e.target.closest('.md[data-src]'); if (!box) return;
+    const src = box.dataset.src; const n = Number(e.target.dataset.task); const on = e.target.checked;
+    if (src.startsWith('note:')){ const nt = notesOf()[src.slice(5)]; if (nt && nt.text){ nt.text = mdToggleTask(nt.text, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
+    else if (src.startsWith('log:')){ const l = find(state.log, src.slice(4)); if (l){ l.text = mdToggleTask(l.text, n, on); l.updated = stampNow(); } }
+    else if (src.startsWith('cmt:') && typeof findComment === 'function'){ const rest = src.slice(4); const k = rest.indexOf(':'); const c = findComment(rest.slice(k + 1), rest.slice(0, k)); if (c){ c.text = mdToggleTask(c.text, n, on); c.updated = stampNow(); } }
+    commit(); return;
+  }
   if (e.target.classList && e.target.classList.contains('status-sel')){
     const kind = e.target.dataset.kind, id = e.target.dataset.id, v = e.target.value;
     const t = kind === 'stage' ? find(state.stages, id) : find(state.activities, id);
@@ -1884,7 +1991,18 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-  if (e.key === 'Tab' && e.target && e.target.id === 'outlineedit'){
+  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && e.target && (e.target.id === 'noteedit' || e.target.id === 'logedit-text')){
+    const t = e.target; const st0 = t.selectionStart; if (st0 !== t.selectionEnd) return;
+    const before = t.value.slice(0, st0), after = t.value.slice(st0); const line = before.slice(before.lastIndexOf('\n') + 1);
+    const m = line.match(/^(\s*)([-*+]|\d+[.)])(\s+)(\[( |x|X)\]\s*)?(.*)$/); if (!m) return;
+    e.preventDefault();
+    if (!m[6].trim() && !m[4]){ t.value = before.slice(0, before.length - line.length) + after; t.selectionStart = t.selectionEnd = st0 - line.length; return; }
+    if (!m[6].trim() && m[4]){ t.value = before.slice(0, before.length - line.length) + after; t.selectionStart = t.selectionEnd = st0 - line.length; return; }
+    const marker = /^\d/.test(m[2]) ? (parseInt(m[2], 10) + 1) + m[2].slice(-1) : m[2];
+    const ins = '\n' + m[1] + marker + m[3] + (m[4] ? '[ ] ' : '');
+    t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length; return;
+  }
+  if (e.key === 'Tab' && e.target && (e.target.id === 'outlineedit' || e.target.id === 'noteedit' || e.target.id === 'logedit-text')){
     e.preventDefault(); const t = e.target; const st0 = t.selectionStart, en0 = t.selectionEnd;
     const before = t.value.slice(0, st0), after = t.value.slice(en0);
     const lineStart = before.lastIndexOf('\n') + 1;
