@@ -818,7 +818,7 @@ function exitsSvg(st){
   return boxRowSvg(fs.map(f => ({id: f.id, title: f.name, sub: f.status, open: pst.part === f.id, cls: 'data', pill: true})), {w: 190, h: 64, perRow: 5, empty: 'No exit artifact assigned.', label: 'Exit artifacts of ' + st.id});
 }
 function actCard(a, inStage){
-  return `<div class="actcard st-${esc(a.status)} node${pst.act === a.id ? ' open' : ''}" data-id="${esc(a.id)}" ${inStage ? 'data-in="stage"' : ''} tabindex="0" role="button"><div class="ac-head"><span class="nid">${esc(a.id)}${cpill(a.id)}</span><span class="faint mono">${esc(a.stage)}</span></div><div class="ac-name">${esc(a.name)}</div>${a.targets ? `<div class="edgeline"><span class="verb">targets</span>${chip(a.targets)}</div>` : ''}</div>`;
+  return `<div class="actcard st-${esc(a.status)} node${pst.act === a.id ? ' open' : ''}" data-id="${esc(a.id)}" ${inStage ? 'data-in="stage"' : ''} tabindex="0" role="button"><div class="ac-head"><span class="nid">${esc(a.id)}${cpill(a.id)}</span><span class="faint mono">${esc(a.stage)}</span></div><div class="ac-name" title="${esc(a.name)}">${esc(a.short || a.name)}</div>${a.targets ? `<div class="edgeline"><span class="verb">targets</span>${chip(a.targets)}</div>` : ''}</div>`;
 }
 const STATUS_ACT = ['planned','running','done','parked'], STATUS_STAGE = ['planned','active','blocked','done'];
 const statusSelect = (kind, id, cur, opts) => `<select class="status-sel" data-kind="${kind}" data-id="${esc(id)}" aria-label="Status">${opts.map(o => `<option value="${o}" ${o === cur ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
