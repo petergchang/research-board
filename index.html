@@ -828,7 +828,7 @@ function addFormHtml(){
   const val = v => esc(v || '');
   if (addForm.kind === 'stage' || addForm.kind === 'edit-stage'){
     const st = addForm.id ? find(state.stages, addForm.id) : null;
-    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}"><h4>${st ? 'Edit ' + esc(st.id) : 'New stage'}</h4><div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(st && st.name)}" placeholder="e.g. Multi-step prediction"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(st && st.short)}" placeholder="e.g. Multi-step"></label></div>${st ? '' : `<label class="field"><span>Goal (one item per line; indent for sub-items)</span><textarea name="goal" class="outline" rows="3"></textarea></label>`}<div class="tools"><button type="submit" class="btn small primary">${st ? 'Save' : 'Add stage'}</button>${cancel}</div></form>`;
+    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}"><h4>${st ? 'Edit ' + esc(st.id) : 'New stage'}</h4><div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(st && st.name)}" placeholder="e.g. Multi-step prediction"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(st && st.short)}" placeholder="e.g. Multi-step"></label></div>${st ? '' : `<label class="field"><span>Goal (one item per line; indent for sub-items)</span><textarea name="goal" class="outline" rows="3"></textarea></label><label class="field"><span>Place</span><select name="place"><option value="end">at the end</option>${state.stages.length ? `<option value="start">at the start, before ${esc(state.stages[0].id)}</option>` : ''}${state.stages.slice(0, -1).map((x, i) => `<option value="${i}">after ${esc(x.id)} · ${esc(x.name)}</option>`).join('')}</select></label>`}<div class="tools"><button type="submit" class="btn small primary">${st ? 'Save' : 'Add stage'}</button>${cancel}</div></form>`;
   }
   if (addForm.kind === 'unknown' || addForm.kind === 'edit-unknown'){
     const u = addForm.id ? find(state.unknowns, addForm.id) : null; const stage = u ? u.stage : addForm.stage;
@@ -895,7 +895,7 @@ function stagePanel(){
     <div class="mini" id="svg-cats">${stageCatsSvg(st)}</div>
     ${stageCatBody(st)}
     <div class="inside">${commentsBlock(st.id)}</div>
-    <div class="foot"><span class="grp tools-inline">${removeControls('stage', st.id, `Remove ${st.id} with its ${state.unknowns.filter(u => u.stage === st.id).length} unknowns and ${state.activities.filter(a => a.stage === st.id).length} activities?`)}</span><span class="grp"><button data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button data-action="close-stage">Close ${esc(st.id)}</button></span></div></section>`;
+    <div class="foot"><span class="grp tools-inline">${(i => `<button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Swap with the stage before it">← Earlier</button><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="1" ${i === state.stages.length - 1 ? 'disabled' : ''} title="Swap with the stage after it">Later →</button>`)(state.stages.findIndex(x => x.id === st.id))}${removeControls('stage', st.id, `Remove ${st.id} with its ${state.unknowns.filter(u => u.stage === st.id).length} unknowns and ${state.activities.filter(a => a.stage === st.id).length} activities?`)}</span><span class="grp"><button data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button data-action="close-stage">Close ${esc(st.id)}</button></span></div></section>`;
 }
 function activitiesBody(){
   const groups = [['running','Running'],['planned','Planned'],['done','Done'],['parked','Parked']].map(([k, label]) => {
@@ -931,6 +931,25 @@ function togglePlan(kind, id){
   const target = kind === 'vpart' ? 'deep-vision' : kind === 'stage' ? 'panelbox-route' : kind === 'cat' ? 'deep-cat' : (kind === 'act' || kind === 'goact') ? 'deep-act' : 'deep-node';
   const el = document.getElementById(target); if (el) setTimeout(() => el.scrollIntoView({block: kind === 'goact' ? 'start' : 'nearest', behavior: prefersReduced() ? 'auto' : 'smooth'}), 20);
 }
+// stage numbers always follow the order on the map; everything that points at a stage is remapped with it
+function renumberStages(){
+  const map = {}; state.stages.forEach((st, i) => { map[st.id] = 'S' + (i + 1); });
+  if (Object.keys(map).every(k => map[k] === k)) return;
+  const m = id => (id && map[id]) || id;
+  state.stages.forEach(st => { st.id = m(st.id); });
+  state.unknowns.forEach(u => { u.stage = m(u.stage); });
+  state.activities.forEach(a => { a.stage = m(a.stage); });
+  state.artifacts.forEach(f => { f.producedBy = m(f.producedBy); });
+  state.log.forEach(l => { if (l.revises) l.revises = m(l.revises); if (l.about) l.about = m(l.about); });
+  if (state.comments){ const nc = {}; for (const t of Object.keys(state.comments)) nc[m(t)] = state.comments[t]; state.comments = nc; }
+  pst.stage = m(pst.stage); selected = m(selected);
+}
+function moveStage(id, dir){
+  const i = state.stages.findIndex(st => st.id === id); const j = i + dir;
+  if (i < 0 || j < 0 || j >= state.stages.length) return;
+  const [st] = state.stages.splice(i, 1); state.stages.splice(j, 0, st);
+  renumberStages(); pst.stage = st.id; selected = st.id; commit(); toast(st.id + ' moved.');
+}
 function removeNode(kind, id){
   if (kind === 'stage'){
     state.unknowns = state.unknowns.filter(u => u.stage !== id);
@@ -938,6 +957,8 @@ function removeNode(kind, id){
     for (const f of state.artifacts) if (f.producedBy === id) f.producedBy = '';
     state.stages = state.stages.filter(s => s.id !== id);
     if (pst.stage === id){ pst.stage = null; pst.cat = null; pst.part = null; }
+    if (state.comments) delete state.comments[id];
+    renumberStages();
   } else if (kind === 'unknown'){
     for (const a of state.activities) if (a.targets === id) a.targets = null;
     state.unknowns = state.unknowns.filter(u => u.id !== id);
@@ -957,7 +978,9 @@ function submitAddForm(f){
     const name = f.name.value.trim(); if (!name){ f.name.focus(); return; }
     const st = {id: nextId('S', state.stages), name, status: 'planned', goal: parseOutline(f.goal.value)};
     const sh = f.short.value.trim(); if (sh) st.short = sh;
-    state.stages.push(st); addForm = null; pst.stage = st.id; pst.cat = null; pst.part = null; selected = st.id; commit(); toast(st.id + ' added.'); return;
+    const place = f.place ? f.place.value : 'end';
+    if (place === 'end') state.stages.push(st); else if (place === 'start') state.stages.unshift(st); else state.stages.splice(Number(place) + 1, 0, st);
+    renumberStages(); addForm = null; pst.stage = st.id; pst.cat = null; pst.part = null; selected = st.id; commit(); toast(st.id + ' added.'); return;
   }
   if (kind === 'unknown'){
     const text = f.text.value.trim(); if (!text){ f.text.focus(); return; }
@@ -1717,6 +1740,7 @@ document.addEventListener('click', e => {
     if (a === 'remove-ask'){ removing = {kind: act.dataset.kind, id: act.dataset.id}; addForm = null; render(true); return; }
     if (a === 'remove-no'){ removing = null; render(true); return; }
     if (a === 'remove-yes'){ if (removing) removeNode(removing.kind, removing.id); return; }
+    if (a === 'stage-move'){ moveStage(act.dataset.id, Number(act.dataset.dir)); return; }
     if (a === 'outline-edit'){ outlineEditing = {kind: act.dataset.kind, id: act.dataset.id}; render(true); const t = $('#outlineedit'); if (t) t.focus(); return; }
     if (a === 'outline-cancel'){ outlineEditing = null; render(); return; }
     if (a === 'outline-save'){
