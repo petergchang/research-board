@@ -287,6 +287,12 @@ svg .badge.warn rect{fill:var(--warn-soft);stroke:var(--warn)} svg .badge.warn t
 .entry-head .date{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:auto}
 .entry .text{margin-top:5px;font-size:14px}
 .entry .edgeline{margin-top:6px}
+.entry .entry-foot{margin-top:6px;display:flex;justify-content:flex-end;font-size:12px;color:var(--ink-3)}
+.entry .etools{display:inline-flex;gap:10px;align-items:center}
+.entry .etools > button:not(.btn){color:var(--ink-3)} .entry .etools > button:not(.btn):hover{color:var(--ink)}
+.entry.editing textarea{margin-top:6px;font-size:14px;min-height:70px}
+.entry.editing input[type=date]{margin-left:auto;width:auto;font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.entry.editing .tools{display:flex;gap:8px;margin-top:8px}
 
 /* ---------- state cards ---------- */
 .state{margin:40px auto;max-width:520px;padding:24px 26px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-align:center}
@@ -515,6 +521,8 @@ const find = (arr, id) => (arr||[]).find(x => x.id === id);
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fmt(d, year){ if(!d) return ''; const [y,m,dd] = d.split('-').map(Number); return MONTHS[m-1] + ' ' + dd + (year ? ', ' + y : ''); }
 function daysAgo(n){ const t = new Date(TODAY + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() - n); return t.toISOString().slice(0,10); }
+const stampNow = () => new Date().toISOString();
+function newLogId(){ return 'L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 function nextId(prefix, arr){ let m = 0; for (const x of arr){ const n = parseInt(String(x.id).slice(prefix.length), 10); if (!isNaN(n) && n > m) m = n; } return prefix + (m + 1); }
 function kindLabel(k){ return {stage:'stage', unknown:'unknown', activity:'activity', ref:'model entry', artifact:'artifact', log:'log entry', vision:'vision'}[k] || k; }
 function slug(s){ return String(s).toLowerCase().replace(/\s+/g,'-'); }
@@ -647,7 +655,7 @@ function chip(id){
 const pill = (s) => `<span class="pill ${esc(slug(s))}">${esc(s)}</span>`;
 
 function render(force){
-  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing)){ pendingRender = true; return; }
+  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing)){ pendingRender = true; return; }
   pendingRender = false;
   REFS = buildRefs();
   selNeighbors = selected && state ? neighbors(selected) : new Set();
@@ -691,6 +699,7 @@ function renderMain(){
 const pst = { vpart:null, stage:null, cat:null, part:null, act:null };
 let addForm = null;   // {kind, stage?, id?}
 let removing = null;  // {kind, id}
+let logEditing = null; // id of the log entry being edited
 const sections = { vision:true, roadmap:true, activities:true };
 try { const sv = JSON.parse(localStorage.getItem('rb.sections') || 'null'); if (sv && typeof sv === 'object') Object.assign(sections, sv); } catch(e){}
 function saveSections(){ try { localStorage.setItem('rb.sections', JSON.stringify(sections)); } catch(e){} }
@@ -966,8 +975,11 @@ function removeNode(kind, id){
   } else if (kind === 'activity'){
     state.activities = state.activities.filter(a => a.id !== id);
     if (pst.act === id) pst.act = null; if (pst.part === id) pst.part = null;
+  } else if (kind === 'log'){
+    state.logDeleted = state.logDeleted || []; if (!state.logDeleted.includes(id)) state.logDeleted.push(id);
+    state.log = state.log.filter(l => l.id !== id);
   }
-  removing = null; selected = null; commit(); toast(id + ' removed.');
+  removing = null; selected = null; commit(); toast((kind === 'log' ? 'Entry' : id) + ' removed.');
 }
 function submitAddForm(f){
   const kind = f.dataset.kind;
@@ -1025,10 +1037,21 @@ function logEntryHtml(l){
   } else if (l.about){
     edges += `<span class="verb">about</span>${chip(l.about)}`;
   }
+  if (logEditing === l.id){
+    return `<li class="entry node editing" data-id="${esc(l.id)}">
+    <div class="entry-head"><span class="kind ${esc(l.kind)}">${esc(l.kind)}</span><input type="date" id="logedit-date" value="${esc(l.date)}" aria-label="Date"></div>
+    <textarea id="logedit-text" aria-label="Text">${esc(l.text)}</textarea>
+    <div class="tools"><button class="btn small primary" data-action="log-save" data-id="${esc(l.id)}">Save</button><button class="btn small" data-action="log-cancel">Cancel</button></div>
+  </li>`;
+  }
+  const asking = removing && removing.kind === 'log' && removing.id === l.id;
+  const tools = asking ? `<span class="inline-confirm etools">Delete this entry? Status changes it made stay. <button class="btn small danger" data-action="remove-yes">Delete</button><button class="btn small ghost" data-action="remove-no">Keep</button></span>`
+                       : `<span class="etools"><button data-action="log-edit" data-id="${esc(l.id)}">Edit</button><button data-action="log-remove-ask" data-id="${esc(l.id)}">Delete</button></span>`;
   return `<li class="entry node" data-id="${esc(l.id)}">
     <div class="entry-head"><span class="kind ${esc(l.kind)}">${esc(l.kind)}</span><span class="date">${esc(fmt(l.date, true))}</span></div>
     <p class="text">${esc(l.text)}</p>
     ${edges ? `<div class="edgeline">${edges}</div>` : ''}
+    <div class="entry-foot">${tools}</div>
   </li>`;
 }
 const cal = { ym: TODAY.slice(0,7), open: null, sel: null };
@@ -1070,7 +1093,7 @@ function renderDayPanel(){
   const note = notesOf()[d]; const es = dayEntries(d);
   const hasText = !!(note && note.text);
   const noteHtml = (noteEditing || !hasText)
-    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button>` : ''}<span class="faint">Plain text; blank lines make paragraphs.</span></div>`
+    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<span class="faint">Plain text; blank lines make paragraphs.</span></div>`
     : `<div class="notebody">${note.text.split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
   host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}</h2></header>
     <div class="daynote">${noteHtml}</div>
@@ -1434,7 +1457,7 @@ function fillDecision(){
 function closeModal(){ modalOpen = false; $('#overlay').innerHTML = ''; if (pendingRender) render(); }
 function submitModal(){
   const f = $('#logform'); const kind = f.kind.value;
-  const entry = {id: nextId('L', state.log), date: modalDate || TODAY, kind};
+  const entry = {id: newLogId(), date: modalDate || TODAY, kind, updated: stampNow()};
   if (kind === 'result'){
     const a = find(state.activities, f.activity.value); const text = f.rtext.value.trim();
     if (!a){ toast('Nothing to report on.'); return; }
@@ -1517,7 +1540,7 @@ let saving = false, saveQueued = false, dirty = false, saveTimer = null, lastChe
 const saveState = {kind:'ok', text:'Saved'};
 const nowIso = () => new Date().toISOString();
 const timeShort = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-function normalizeState(){ state.comments = state.comments || {}; state.notes = state.notes || {}; state.log = state.log || []; }
+function normalizeState(){ state.comments = state.comments || {}; state.notes = state.notes || {}; state.log = state.log || []; state.logDeleted = state.logDeleted || []; if (state.logDeleted.length){ const d = new Set(state.logDeleted); state.log = state.log.filter(l => !d.has(l.id)); } }
 function storeKey(k, remember){ crypto.subtle.exportKey('raw', k).then(raw => { const s = b64enc(new Uint8Array(raw)); try { const st = remember ? localStorage : sessionStorage; st.setItem('rb.key', s); if (token) st.setItem('rb.tok', token); } catch(e){} }); }
 function storeToken(){ try { const st = localStorage.getItem('rb.key') ? localStorage : sessionStorage.getItem('rb.key') ? sessionStorage : null; if (st && token) st.setItem('rb.tok', token); } catch(e){} }
 function storedToken(){ try { return localStorage.getItem('rb.tok') || sessionStorage.getItem('rb.tok') || null; } catch(e){ return null; } }
@@ -1567,9 +1590,11 @@ function mergeStates(remote, local){
     merged[t] = Array.from(m.values()).sort((a, b) => String(a.date).localeCompare(String(b.date)));
   }
   out.comments = merged;
+  const del = new Set((remote.logDeleted || []).concat(local.logDeleted || [])); local.logDeleted = Array.from(del);
   const byId = new Map(local.log.map(l => [l.id, l]));
-  for (const l of (remote.log || [])){ const p = byId.get(l.id); if (!p) local.log.push(l); else if (p.text !== l.text || p.date !== l.date){ const copy = Object.assign({}, l, {id: nextId('L', local.log)}); local.log.push(copy); } }
-  for (const d of Object.keys(remote.notes || {})) if (!local.notes[d]) local.notes[d] = remote.notes[d];
+  for (const l of (remote.log || [])){ const p = byId.get(l.id); if (!p) local.log.push(l); else if (String(l.updated || '') > String(p.updated || '')) Object.assign(p, l); }
+  local.log = local.log.filter(l => !del.has(l.id));
+  for (const d of Object.keys(remote.notes || {})){ const r = remote.notes[d], l = local.notes[d]; if (!l || String(r.stamp || r.updated || '') > String(l.stamp || l.updated || '')) local.notes[d] = r; }
   return out;
 }
 async function doSave(){
@@ -1593,7 +1618,7 @@ async function doSave(){
   } finally { saving = false; if (saveQueued){ saveQueued = false; doSave(); } }
 }
 function cmtTyping(){ return Array.prototype.some.call(document.querySelectorAll('.cmtform textarea'), t => t.value.trim()); }
-function editorOpen(){ return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || cmtTyping()); }
+function editorOpen(){ return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping()); }
 async function refreshFromRepo(manual){
   if (dbState !== 'ready' || !token) return;
   if (saving || dirty){ if (manual) toast('There are unsaved changes; save first.'); return; }
@@ -1723,7 +1748,7 @@ document.addEventListener('click', e => {
       const r = refById(act.dataset.ref); const ta = $('#partedit');
       if (r && r.partObj && ta){
         const nb = ta.value.trim();
-        if (nb !== (r.partObj.body || '')){ r.partObj.body = nb; r.partObj.updated = TODAY; state.log.push({id: nextId('L', state.log), date: TODAY, kind: 'note', text: `Model entry ${r.path} (${r.name}) edited.`, about: r.id}); }
+        if (nb !== (r.partObj.body || '')){ r.partObj.body = nb; r.partObj.updated = TODAY; state.log.push({id: newLogId(), date: TODAY, kind: 'note', text: `Model entry ${r.path} (${r.name}) edited.`, about: r.id, updated: stampNow()}); }
       }
       editingPart = null; commit(); return;
     }
@@ -1740,6 +1765,15 @@ document.addEventListener('click', e => {
     if (a === 'remove-ask'){ removing = {kind: act.dataset.kind, id: act.dataset.id}; addForm = null; render(true); return; }
     if (a === 'remove-no'){ removing = null; render(true); return; }
     if (a === 'remove-yes'){ if (removing) removeNode(removing.kind, removing.id); return; }
+    if (a === 'log-edit'){ logEditing = act.dataset.id; removing = null; render(true); const t = $('#logedit-text'); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
+    if (a === 'log-cancel'){ logEditing = null; render(true); return; }
+    if (a === 'log-save'){
+      const l = find(state.log, act.dataset.id); const t = $('#logedit-text'), d = $('#logedit-date');
+      if (l && t){ const text = t.value.trim(); if (!text){ t.focus(); return; } l.text = text; if (d && /^\d{4}-\d{2}-\d{2}$/.test(d.value) && d.value !== l.date){ l.date = d.value; if (view === 'logs'){ cal.open = l.date; cal.sel = l.date; cal.ym = l.date.slice(0, 7); } } l.updated = stampNow(); }
+      logEditing = null; commit(); toast('Entry saved.'); return;
+    }
+    if (a === 'log-remove-ask'){ removing = {kind: 'log', id: act.dataset.id}; logEditing = null; render(true); return; }
+    if (a === 'note-delete'){ const d = act.dataset.day; if (d){ notesOf()[d] = {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note deleted.'); return; }
     if (a === 'stage-move'){ moveStage(act.dataset.id, Number(act.dataset.dir)); return; }
     if (a === 'outline-edit'){ outlineEditing = {kind: act.dataset.kind, id: act.dataset.id}; render(true); const t = $('#outlineedit'); if (t) t.focus(); return; }
     if (a === 'outline-cancel'){ outlineEditing = null; render(); return; }
@@ -1755,7 +1789,7 @@ document.addEventListener('click', e => {
     if (a === 'close-day'){ cal.open = null; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
     if (a === 'note-edit'){ noteEditing = true; renderDayPanel(); const t = $('#noteedit'); if (t) t.focus(); return; }
     if (a === 'note-cancel'){ noteEditing = false; renderDayPanel(); if (pendingRender) render(); return; }
-    if (a === 'note-save'){ const t = $('#noteedit'); const d = act.dataset.day; if (t && d){ const txt = t.value.trim(); const notes = notesOf(); if (txt) notes[d] = {text: txt, updated: TODAY}; else delete notes[d]; } noteEditing = false; commit(); toast('Note saved.'); return; }
+    if (a === 'note-save'){ const t = $('#noteedit'); const d = act.dataset.day; if (t && d){ const txt = t.value.trim(); const notes = notesOf(); notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note saved.'); return; }
     if (a === 'toggle-drawer'){ drawerOpen = !drawerOpen; renderDrawer(); return; }
     if (a === 'close-drawer'){ drawerOpen = false; renderDrawer(); return; }
     if (a === 'goto-target'){ gotoTarget(act.dataset.target); return; }
@@ -1826,6 +1860,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape'){
     if (modalOpen){ closeModal(); return; }
     if (drawerOpen){ drawerOpen = false; renderDrawer(); return; }
+    if (logEditing){ logEditing = null; render(true); return; }
+    if (removing && removing.kind === 'log'){ removing = null; render(true); return; }
     if (editingPart){ const r = refById(editingPart); editingPart = null; if (r) renderDeep(r.map); if (pendingRender) render(); return; }
     if (outlineEditing){ outlineEditing = null; render(); return; }
     if (view === 'artifacts'){
@@ -1856,7 +1892,7 @@ document.addEventListener('keydown', e => {
     else { t.value = before.slice(0, lineStart) + '  ' + before.slice(lineStart) + after; t.selectionStart = t.selectionEnd = st0 + 2; }
     return;
   }
-  if (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing) return;
+  if (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing) return;
   if (e.target && e.target.closest && e.target.closest('textarea, input')) return;
   if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches && e.target.matches('[role="button"]') && !e.target.matches('button')){
     e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', {bubbles:true}));
