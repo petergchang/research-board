@@ -238,6 +238,16 @@ textarea.outline{font-family:var(--mono);font-size:13px;line-height:1.5;min-heig
 .md hr{border:0;border-top:1px solid var(--line);margin:8px 0}
 .md a{color:var(--accent)}
 .md b{font-weight:600}
+.md .tbl{overflow-x:auto;margin:6px 0;max-width:100%}
+.md table{border-collapse:collapse;font-family:var(--body);font-size:13.5px;line-height:1.35;font-variant-numeric:tabular-nums}
+.md th,.md td{border:1px solid var(--line);padding:4px 9px;vertical-align:top;white-space:nowrap}
+.md th{background:var(--surface-2);font-weight:600;text-align:left}
+.md tbody tr:nth-child(even) td{background:var(--surface)}
+.md img.mdimg{display:block;max-width:100%;max-height:440px;margin:6px 0;border-radius:8px;border:1px solid var(--line-2);background:var(--surface-2);cursor:zoom-in}
+.md img.mdimg:not([src]){min-height:64px;min-width:160px;font-size:12px;color:var(--ink-3);padding:8px;cursor:default}
+.md img.mdimg.missing{cursor:pointer;border-style:dashed}
+#lightbox{position:fixed;inset:0;background:rgba(15,16,28,.86);z-index:40;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:24px}
+#lightbox img{max-width:100%;max-height:100%;border-radius:6px;box-shadow:var(--shadow)}
 .daynote .tools code{font-family:var(--mono);font-size:11.5px;background:var(--surface-2);padding:0 4px;border-radius:3px}
 .daynote .tools{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12.5px}
 .filters{display:flex;gap:6px;margin-bottom:10px}
@@ -524,6 +534,8 @@ mark.hl:hover{background:var(--accent-line)}
 <div class="app" id="app"></div>
 <div id="drawerhost"></div>
 <button id="selbtn" hidden data-action="anchor-comment">Comment on this</button>
+<input type="file" id="imgpick" accept="image/*" multiple hidden>
+<div id="lightbox" hidden><img alt=""></div>
 <div id="overlay"></div>
 <div id="toast" hidden class="toast"></div>
 
@@ -571,16 +583,21 @@ window.__typesetAll = () => { document.querySelectorAll('.panel, .caption, .deep
 // Supports: paragraphs (single newlines break lines), # ## ### headings, - * + bullets, 1. numbered,
 // nesting by indentation (2 spaces or a tab), - [ ] / - [x] tasks, **bold**, *italic*, `code`, ``` fences,
 // > quotes, --- rules, [text](http…) links, ~~strike~~. TeX in \( \) and \[ \] is left for MathJax.
+function mdEmph(t){
+  t = t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/__([^_\n]+)__/g, '<b>$1</b>');
+  t = t.replace(/(^|[^*\w\\])\*([^*\n]+)\*(?![*\w])/g, '$1<i>$2</i>').replace(/(^|[^_\w\\])_([^_\n]+)_(?![_\w])/g, '$1<i>$2</i>');
+  return t.replace(/~~([^~\n]+)~~/g, '<s>$1</s>');
+}
 function mdInline(s){
   const parts = String(s).split(/(`[^`\n]*`)/);
   return parts.map((p, k) => {
     if (k % 2 === 1) return '<code>' + esc(p.slice(1, -1)) + '</code>';
-    let t = esc(p);
-    t = t.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    t = t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/__([^_\n]+)__/g, '<b>$1</b>');
-    t = t.replace(/(^|[^*\w\\])\*([^*\n]+)\*(?![*\w])/g, '$1<i>$2</i>').replace(/(^|[^_\w\\])_([^_\n]+)_(?![_\w])/g, '$1<i>$2</i>');
-    t = t.replace(/~~([^~\n]+)~~/g, '<s>$1</s>');
-    return t;
+    let t = esc(p); const keep = [];
+    const hold = html => { keep.push(html); return '\u0001' + (keep.length - 1) + '\u0001'; };
+    t = t.replace(/!\[([^\]\n]*)\]\((img:[A-Za-z0-9]+|https?:\/\/[^\s)]+)\)/g, (m, alt, src) => hold(src.startsWith('img:') ? `<img class="mdimg" data-img="${src.slice(4)}" alt="${alt}" title="${alt}">` : `<img class="mdimg" src="${src}" alt="${alt}">`));
+    t = t.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, (m, a, h) => hold(`<a href="${h}" target="_blank" rel="noopener">${mdEmph(a)}</a>`));
+    t = mdEmph(t);
+    return t.replace(/\u0001(\d+)\u0001/g, (m, i) => keep[i]);
   }).join('');
 }
 function md(src, ref){
@@ -617,9 +634,19 @@ function md(src, ref){
     while (stack.length){ const s = stack.pop(); html += '</' + s.type + '>' + (stack.length ? '</li>' : ''); }
     return html;
   }
+  const SEP = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+  const cellsOf = l => { let t = l.trim(); if (t.startsWith('|')) t = t.slice(1); if (t.endsWith('|') && !t.endsWith('\\|')) t = t.slice(0, -1); return t.split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|')); };
+  const tableAt = j => { if (j + 1 >= lines.length || !/\|/.test(lines[j]) || !SEP.test(lines[j + 1])) return false; const h = cellsOf(lines[j]), sp = cellsOf(lines[j + 1]); return h.length === sp.length && (h.length >= 2 || /\|/.test(lines[j + 1])); };
+  function table(){
+    const head = cellsOf(lines[i]); const al = cellsOf(lines[i + 1]).map(c => /^:-+:$/.test(c) ? 'center' : /-+:$/.test(c) ? 'right' : 'left'); i += 2;
+    const rows = []; while (i < lines.length && lines[i].trim() && /\|/.test(lines[i])) rows.push(cellsOf(lines[i++]));
+    const st = k => al[k] && al[k] !== 'left' ? ` style="text-align:${al[k]}"` : '';
+    return `<div class="tbl"><table><thead><tr>${head.map((c, k) => `<th${st(k)}>${mdInline(c)}</th>`).join('')}</tr></thead>${rows.length ? `<tbody>${rows.map(r => `<tr>${head.map((_, k) => `<td${st(k)}>${mdInline(r[k] || '')}</td>`).join('')}</tr>`).join('')}</tbody>` : ''}</table></div>`;
+  }
   while (i < lines.length){
     const L = lines[i];
     if (!L.trim()){ i++; continue; }
+    if (tableAt(i)){ out.push(table()); continue; }
     if (/^```/.test(L)){ const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; out.push('<pre><code>' + esc(buf.join('\n')) + '</code></pre>'); continue; }
     let m;
     if ((m = L.match(/^(#{1,3})\s+(.*)$/))){ out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++; continue; }
@@ -627,15 +654,17 @@ function md(src, ref){
     if (/^>\s?/.test(L)){ const buf = []; while (i < lines.length && /^>\s?/.test(lines[i])) buf.push(lines[i++].replace(/^>\s?/, '')); out.push('<blockquote>' + md(buf.join('\n')) + '</blockquote>'); continue; }
     if (LI.test(L)){ out.push(list(0)); continue; }
     const buf = [];
-    while (i < lines.length && lines[i].trim() && !LI.test(lines[i]) && !/^(#{1,3}\s|```|>\s?|\s*(-{3,}|\*{3,})\s*$)/.test(lines[i])) buf.push(lines[i++]);
+    while (i < lines.length && lines[i].trim() && !LI.test(lines[i]) && !tableAt(i) && !/^(#{1,3}\s|```|>\s?|\s*(-{3,}|\*{3,})\s*$)/.test(lines[i])) buf.push(lines[i++]);
     out.push('<p>' + buf.map(x => mdInline(x.trim())).join('<br>') + '</p>');
   }
-  return `<div class="md"${ref ? ` data-src="${esc(ref)}"` : ''}>${out.join('')}</div>`;
+  const html = out.join('');
+  if (html.includes('data-img') && typeof scheduleHydrate === 'function') scheduleHydrate();
+  return `<div class="md"${ref ? ` data-src="${esc(ref)}"` : ''}>${html}</div>`;
 }
 // plain first line of a markdown text, for previews
 function mdPlain(src){
   const line = String(src || '').split('\n').find(x => x.trim()) || '';
-  return line.replace(/^\s*(#{1,3}\s+|>\s?|([-*+]|\d+[.)])\s+(\[( |x|X)\]\s*)?)/, '').replace(/[*_`~]+/g, '');
+  return line.replace(/!\[([^\]]*)\]\([^)]*\)/g, (m, a) => a || 'image').replace(/^\s*(#{1,3}\s+|>\s?|([-*+]|\d+[.)])\s+(\[( |x|X)\]\s*)?)/, '').replace(/^\|.*$/, 'table').replace(/[*_`~]+/g, '');
 }
 // flip the n-th task checkbox in a markdown source
 function mdToggleTask(src, n, checked){
@@ -794,7 +823,7 @@ function renderTop(){
 function renderFoot(){
   if (dbState !== 'ready') return `<footer class="foot"><span>Routebook</span><span class="spacer"></span><span>${esc(SITE.owner + '/' + SITE.repo)}</span></footer>`;
   const cls = saveState.kind === 'saving' ? 'busy' : saveState.kind === 'error' ? 'bad' : '';
-  return `<footer class="foot"><span>Routebook</span><span class="spacer"></span><span class="sync ${cls}"><i></i>${esc(saveState.text)}</span>${saveState.kind === 'error' ? `<button class="link" data-action="retry-save">Retry</button>` : ''}<button class="link" data-action="refresh" title="Load the latest saved version">Refresh</button><button class="link" data-action="change-token" title="Replace the GitHub token">Token</button><button class="link" data-action="lock" title="Forget the password on this device">Lock</button></footer>`;
+  return `<footer class="foot"><span>Routebook</span><span class="spacer"></span>${typeof uploading === 'number' && uploading ? `<span class="sync busy"><i></i>Uploading ${uploading} image${uploading === 1 ? '' : 's'}…</span>` : ''}<span class="sync ${cls}"><i></i>${esc(saveState.text)}</span>${saveState.kind === 'error' ? `<button class="link" data-action="retry-save">Retry</button>` : ''}<button class="link" data-action="refresh" title="Load the latest saved version">Refresh</button><button class="link" data-action="change-token" title="Replace the GitHub token">Token</button><button class="link" data-action="lock" title="Forget the password on this device">Lock</button></footer>`;
 }
 function renderMain(){
   if (dbState === 'locked' || dbState === 'checking') return gateHtml();
@@ -1152,7 +1181,7 @@ function logEntryHtml(l){
     return `<li class="entry node editing" data-id="${esc(l.id)}">
     <div class="entry-head"><span class="kind ${esc(l.kind)}">${esc(l.kind)}</span><input type="date" id="logedit-date" value="${esc(l.date)}" aria-label="Date"></div>
     <textarea id="logedit-text" aria-label="Text">${esc(l.text)}</textarea>
-    <div class="tools"><button class="btn small primary" data-action="log-save" data-id="${esc(l.id)}">Save</button><button class="btn small" data-action="log-cancel">Cancel</button></div>
+    <div class="tools"><button class="btn small primary" data-action="log-save" data-id="${esc(l.id)}">Save</button><button class="btn small" data-action="log-cancel">Cancel</button><button type="button" class="btn small" data-action="img-pick" data-for="logedit-text">Attach image</button></div>
   </li>`;
   }
   const asking = removing && removing.kind === 'log' && removing.id === l.id;
@@ -1204,7 +1233,7 @@ function renderDayPanel(){
   const note = notesOf()[d]; const es = dayEntries(d);
   const hasText = !!(note && note.text);
   const noteHtml = (noteEditing || !hasText)
-    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents.</span></div>`
+    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="noteedit">Attach image</button><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images.</span></div>`
     : `<div class="notebody">${md(note.text, 'note:' + d)}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
   host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}</h2></header>
     <div class="daynote">${noteHtml}</div>
@@ -1653,7 +1682,7 @@ let saving = false, saveQueued = false, dirty = false, saveTimer = null, lastChe
 const saveState = {kind:'ok', text:'Saved'};
 const nowIso = () => new Date().toISOString();
 const timeShort = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-function normalizeState(){ state.comments = state.comments || {}; state.notes = state.notes || {}; state.log = state.log || []; state.logDeleted = state.logDeleted || []; if (state.logDeleted.length){ const d = new Set(state.logDeleted); state.log = state.log.filter(l => !d.has(l.id)); } }
+function normalizeState(){ state.comments = state.comments || {}; state.notes = state.notes || {}; state.images = state.images || {}; state.log = state.log || []; state.logDeleted = state.logDeleted || []; if (state.logDeleted.length){ const d = new Set(state.logDeleted); state.log = state.log.filter(l => !d.has(l.id)); } }
 function storeKey(k, remember){ crypto.subtle.exportKey('raw', k).then(raw => { const s = b64enc(new Uint8Array(raw)); try { const st = remember ? localStorage : sessionStorage; st.setItem('rb.key', s); if (token) st.setItem('rb.tok', token); } catch(e){} }); }
 function storeToken(){ try { const st = localStorage.getItem('rb.key') ? localStorage : sessionStorage.getItem('rb.key') ? sessionStorage : null; if (st && token) st.setItem('rb.tok', token); } catch(e){} }
 function storedToken(){ try { return localStorage.getItem('rb.tok') || sessionStorage.getItem('rb.tok') || null; } catch(e){ return null; } }
@@ -1707,6 +1736,7 @@ function mergeStates(remote, local){
   const byId = new Map(local.log.map(l => [l.id, l]));
   for (const l of (remote.log || [])){ const p = byId.get(l.id); if (!p) local.log.push(l); else if (String(l.updated || '') > String(p.updated || '')) Object.assign(p, l); }
   local.log = local.log.filter(l => !del.has(l.id));
+  local.images = local.images || {}; for (const k of Object.keys(remote.images || {})) if (!local.images[k]) local.images[k] = remote.images[k];
   for (const d of Object.keys(remote.notes || {})){ const r = remote.notes[d], l = local.notes[d]; if (!l || String(r.stamp || r.updated || '') > String(l.stamp || l.updated || '')) local.notes[d] = r; }
   return out;
 }
@@ -1745,7 +1775,7 @@ async function refreshFromRepo(manual){
 }
 window.addEventListener('focus', () => refreshFromRepo(false));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFromRepo(false); });
-window.addEventListener('beforeunload', e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (dirty || uploading){ e.preventDefault(); e.returnValue = ''; } });
 async function boot(){
   dbState = 'locked'; render();
   try { const k = await importStoredKey(); if (k){ key = k; dbState = 'loading'; render(); await openWithKey(); } }
@@ -1918,6 +1948,96 @@ function showAnchor(target, cid){
 document.addEventListener('selectionchange', () => { clearTimeout(selTimer); selTimer = setTimeout(updateSelBtn, 150); });
 document.addEventListener('scroll', () => { const btn = document.getElementById('selbtn'); if (btn && !btn.hidden){ btn.hidden = true; } }, true);
 document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('#selbtn')) e.preventDefault(); });
+
+// ---------- images: encrypted files in the repo, referenced from notes as ![alt](img:ID) ----------
+const imgCache = new Map(); let uploading = 0, uploadChain = Promise.resolve(), hydrateTimer = null, imgTarget = null;
+function newImgId(){ return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6).replace(/[^a-z0-9]/g, 'x'); }
+async function ghGetBytes(path, tok){
+  const h = ghHeaders(tok); h['Accept'] = 'application/vnd.github.raw+json';
+  const r = await fetch(API + path + '?ref=' + encodeURIComponent(SITE.branch), {headers: h});
+  if (r.status === 404) return null;
+  if (r.status === 401 || r.status === 403) throw Object.assign(new Error('GitHub rejected the token'), {auth:true, status:r.status});
+  if (!r.ok) throw new Error('GitHub answered ' + r.status);
+  return new Uint8Array(await r.arrayBuffer());
+}
+async function ghPutBytes(path, tok, u8, message){
+  const body = {message, content: b64enc(u8), branch: SITE.branch};
+  const r = await fetch(API + path, {method:'PUT', headers: Object.assign(ghHeaders(tok), {'Content-Type':'application/json'}), body: JSON.stringify(body)});
+  if (r.status === 422) return true;   // already there from an earlier attempt
+  if (r.status === 401 || r.status === 403) throw Object.assign(new Error('GitHub rejected the token'), {auth:true, status:r.status});
+  if (!r.ok) throw new Error('GitHub answered ' + r.status);
+  return true;
+}
+async function encryptBytes(u8){ const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, u8)); const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12); return out; }
+async function decryptBytes(u8){ return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv: u8.slice(0, 12)}, key, u8.slice(12))); }
+async function prepareImage(file){
+  const MAXD = 1800, MAXB = 1500000;
+  let bmp; try { bmp = await createImageBitmap(file); } catch(e){ throw new Error((file.name || 'That file') + ' is not an image this browser can read.'); }
+  const w = bmp.width, h = bmp.height; const scale = Math.min(1, MAXD / Math.max(w, h));
+  if (scale === 1 && file.size <= MAXB) return {bytes: new Uint8Array(await file.arrayBuffer()), type: file.type || 'image/png', w, h};
+  const cw = Math.round(w * scale), ch = Math.round(h * scale);
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch; const g = c.getContext('2d'); g.drawImage(bmp, 0, 0, cw, ch);
+  const toBlob = (type, q) => new Promise(res => c.toBlob(res, type, q));
+  let blob = null;
+  if (file.type === 'image/png'){ blob = await toBlob('image/png'); if (blob && blob.size > MAXB) blob = null; }
+  if (!blob){ g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#fff'; g.fillRect(0, 0, cw, ch); blob = await toBlob('image/jpeg', 0.85); }
+  return {bytes: new Uint8Array(await blob.arrayBuffer()), type: blob.type, w: cw, h: ch};
+}
+function insertAtCursor(t, text){
+  const st0 = t.selectionStart, en0 = t.selectionEnd; const before = t.value.slice(0, st0), after = t.value.slice(en0);
+  const pre = before && !before.endsWith('\n') ? '\n' : '', post = after && !after.startsWith('\n') ? '\n' : '';
+  const ins = pre + text + post; t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length; t.focus();
+}
+async function attachImages(files, textarea){
+  if (!files || !files.length || !textarea) return;
+  if (dbState !== 'ready' || !token || !key){ toast('Connect the repository first; images are uploaded with the token.'); return; }
+  for (const f of files){
+    if (!/^image\//.test(f.type)){ toast((f.name || 'That file') + ' is not an image.'); continue; }
+    let img; try { img = await prepareImage(f); } catch(e){ toast(e.message || 'Could not read that image.'); continue; }
+    const id = newImgId(); const name = (f.name || 'image').replace(/\.[a-z0-9]+$/i, '').replace(/[\[\]()]/g, '').slice(0, 60) || 'image';
+    state.images = state.images || {}; state.images[id] = {n: name, t: img.type, w: img.w, h: img.h, s: img.bytes.length, d: TODAY};
+    imgCache.set(id, URL.createObjectURL(new Blob([img.bytes], {type: img.type})));
+    insertAtCursor(textarea, `![${name}](img:${id})`);
+    queueUpload(id, img.bytes);
+  }
+}
+function queueUpload(id, bytes){
+  uploading++; setSync(saveState.kind, saveState.text);
+  uploadChain = uploadChain.then(async () => {
+    for (let tries = 0; ; tries++){
+      try { const enc = await encryptBytes(bytes); await ghPutBytes('img/' + id + '.enc', token, enc, 'Routebook: image'); break; }
+      catch(e){ if (e.auth || tries >= 3){ toast('Image upload failed: ' + (e.message || e) + '. Attach it again.'); break; } await new Promise(r => setTimeout(r, 800 * (tries + 1))); }
+    }
+    uploading--; setSync(saveState.kind, saveState.text);
+  });
+}
+function scheduleHydrate(){ clearTimeout(hydrateTimer); hydrateTimer = setTimeout(() => hydrateImages(document), 0); }
+async function loadImageUrl(id){
+  if (imgCache.has(id)) return imgCache.get(id);
+  const p = (async () => {
+    const meta = (state && state.images || {})[id] || {};
+    const u8 = await ghGetBytes('img/' + id + '.enc', token); if (!u8) throw new Error('missing');
+    const pt = await decryptBytes(u8);
+    return URL.createObjectURL(new Blob([pt], {type: meta.t || 'image/jpeg'}));
+  })();
+  imgCache.set(id, p);
+  try { const url = await p; imgCache.set(id, url); return url; } catch(e){ imgCache.delete(id); throw e; }
+}
+function hydrateImages(root){
+  if (!root || !key) return;
+  root.querySelectorAll('img.mdimg[data-img]:not([src]):not(.loading):not(.missing)').forEach(async img => {
+    img.classList.add('loading'); const id = img.dataset.img;
+    try { img.src = await loadImageUrl(id); img.classList.remove('loading'); }
+    catch(e){ img.classList.remove('loading'); img.classList.add('missing'); img.alt = 'Image not available yet — click to retry'; img.title = img.alt; }
+  });
+}
+function openLightbox(src, alt){ const lb = document.getElementById('lightbox'); if (!lb) return; const im = lb.querySelector('img'); im.src = src; im.alt = alt || ''; lb.hidden = false; }
+function closeLightbox(){ const lb = document.getElementById('lightbox'); if (lb && !lb.hidden){ lb.hidden = true; lb.querySelector('img').removeAttribute('src'); return true; } return false; }
+const IMG_TA = '#noteedit, #logedit-text, .cmtform textarea, #logform textarea';
+document.addEventListener('paste', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
+document.addEventListener('dragover', e => { const t = e.target; if (t && t.matches && t.matches(IMG_TA)) e.preventDefault(); });
+document.addEventListener('drop', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
+document.addEventListener('change', e => { if (e.target && e.target.id === 'imgpick'){ const t = imgTarget ? document.getElementById(imgTarget) : null; const files = Array.from(e.target.files || []); e.target.value = ''; if (t) attachImages(files, t); else toast('Open the editor first, then attach.'); } });
 // ---------- events ----------
 let toastTimer = null;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
@@ -1925,6 +2045,9 @@ function setView(v){ view = v; selected = null; editingPart = null; outlineEditi
 function mapKeyOf(el){ const sec = el.closest('.mapsec'); return sec ? sec.id.replace('map-', '') : null; }
 
 document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('#lightbox')){ closeLightbox(); return; }
+  const im = e.target.closest && e.target.closest('img.mdimg');
+  if (im){ if (im.classList.contains('missing')){ im.classList.remove('missing'); im.removeAttribute('src'); hydrateImages(im.parentElement); } else if (im.getAttribute('src')) openLightbox(im.getAttribute('src'), im.alt); return; }
   const act = e.target.closest('[data-action]');
   if (act){
     const a = act.dataset.action;
@@ -1988,6 +2111,7 @@ document.addEventListener('click', e => {
     if (a === 'note-cancel'){ noteEditing = false; renderDayPanel(); if (pendingRender) render(); return; }
     if (a === 'note-save'){ const t = $('#noteedit'); const d = act.dataset.day; if (t && d){ const txt = t.value.trim(); const notes = notesOf(); notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note saved.'); return; }
     if (a === 'anchor-comment'){ startAnchoredComment(); return; }
+    if (a === 'img-pick'){ imgTarget = act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
     if (a === 'anchor-clear'){ pendingAnchor = null; refreshCmts(act.closest('.cmtform').dataset.target); return; }
     if (a === 'show-comment'){ showComment(act.dataset.cid); return; }
     if (a === 'show-anchor'){ showAnchor(act.dataset.target, act.dataset.cid); return; }
@@ -2067,6 +2191,7 @@ document.addEventListener('submit', e => {
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter') && (e.metaKey || e.ctrlKey) && e.target && e.target.closest && e.target.closest('.cmtform')){ e.preventDefault(); postComment(e.target.closest('.cmtform')); return; }
   if (e.key === 'Escape'){
+    if (closeLightbox()) return;
     if (modalOpen){ closeModal(); return; }
     if (drawerOpen){ drawerOpen = false; renderDrawer(); return; }
     if (logEditing){ logEditing = null; render(true); return; }
