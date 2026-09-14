@@ -800,14 +800,17 @@ function render(force){
   REFS = buildRefs();
   selNeighbors = selected && state ? neighbors(selected) : new Set();
   const app = $('#app');
-  const scroller = app.querySelector('.plantab'); const keep = scroller ? scroller.scrollTop : 0;
+  const sameView = renderedView === view; renderedView = view;
+  const scroller = app.querySelector('.plantab'); const keep = sameView && scroller ? scroller.scrollTop : 0; const keepY = sameView ? window.scrollY : 0;
   app.innerHTML = renderTop() + '<div class="main">' + renderMain() + '</div>' + renderFoot();
-  const sc2 = app.querySelector('.plantab'); if (sc2 && keep) sc2.scrollTop = keep;
   renderDrawer();
   if (view === 'artifacts' && state) mountArtifacts();
   if (view === 'plan' && state) mountRoute();
   if (view === 'logs' && state){ renderDayPanel(); applySelection(); }
+  const sc2 = app.querySelector('.plantab'); if (sc2 && keep) sc2.scrollTop = keep;
+  window.scrollTo(0, keepY);
 }
+let renderedView = null;
 function renderTop(){
   const title = state ? state.title : 'CMK Routebook';
   const tab = (id, label) => `<button role="tab" aria-selected="${view === id}" data-action="view" data-view="${id}">${label}</button>`;
@@ -1233,7 +1236,7 @@ function renderDayPanel(){
   const note = notesOf()[d]; const es = dayEntries(d);
   const hasText = !!(note && note.text);
   const noteHtml = (noteEditing || !hasText)
-    ? `<textarea id="noteedit" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Save note</button>${hasText ? `<button class="btn small" data-action="note-cancel">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="noteedit">Attach image</button><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images.</span></div>`
+    ? `<textarea id="noteedit" data-day="${d}" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save" data-day="${d}">Done</button>${hasText ? `<button class="btn small" data-action="note-cancel" title="Put the note back the way it was when you started editing">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="noteedit">Attach image</button><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images. Saved as you type.</span></div>`
     : `<div class="notebody">${md(note.text, 'note:' + d)}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
   host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}</h2></header>
     <div class="daynote">${noteHtml}</div>
@@ -1247,7 +1250,32 @@ function renderDayPanel(){
   if (typeof applyHighlights === 'function') applyHighlights(host);
   applySelection();
 }
+// the note editor saves as you type, and always before the panel changes under it
+let noteDraftTimer = null, noteOrig = null;
+function noteFlush(){
+  const t = document.getElementById('noteedit'); if (!t) return false;
+  const d = t.dataset.day; if (!d) return false;
+  const txt = t.value.trim(); const notes = notesOf(); const cur = notes[d] && !notes[d].deleted ? (notes[d].text || '') : '';
+  if (txt === cur) return false;
+  if (noteOrig && noteOrig.day !== d) noteOrig = null;
+  if (!noteOrig) noteOrig = {day: d, note: notes[d] ? JSON.parse(JSON.stringify(notes[d])) : null};
+  notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true};
+  commit(); return true;
+}
+function noteExit(){ clearTimeout(noteDraftTimer); noteEditing = false; const changed = noteFlush(); noteOrig = null; return changed; }
+function logEditFlush(){
+  if (!logEditing) return false;
+  const l = find(state.log, logEditing); const t = $('#logedit-text'), d = $('#logedit-date'); logEditing = null;
+  if (!l || !t) return false;
+  const text = t.value.trim(); if (!text) return false;
+  let changed = false;
+  if (text !== l.text){ l.text = text; changed = true; }
+  if (d && /^\d{4}-\d{2}-\d{2}$/.test(d.value) && d.value !== l.date){ l.date = d.value; changed = true; }
+  if (changed){ l.updated = stampNow(); commit(); }
+  return changed;
+}
 function openDay(d, scroll){
+  noteExit(); logEditFlush();
   cal.sel = d; noteEditing = false;
   cal.open = (cal.open === d) ? null : d;
   document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel'));
@@ -1761,7 +1789,7 @@ async function doSave(){
   } finally { saving = false; if (saveQueued){ saveQueued = false; doSave(); } }
 }
 function cmtTyping(){ return Array.prototype.some.call(document.querySelectorAll('.cmtform textarea'), t => t.value.trim()); }
-function editorOpen(){ return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping()); }
+function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping() || (a && a.id === 'noteedit')); }
 async function refreshFromRepo(manual){
   if (dbState !== 'ready' || !token) return;
   if (saving || dirty){ if (manual) toast('There are unsaved changes; save first.'); return; }
@@ -1774,8 +1802,12 @@ async function refreshFromRepo(manual){
   } catch(e){ if (manual) toast('Could not refresh: ' + (e.message || e)); }
 }
 window.addEventListener('focus', () => refreshFromRepo(false));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFromRepo(false); });
-window.addEventListener('beforeunload', e => { if (dirty || uploading){ e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ if (typeof noteFlush === 'function' && noteFlush()){ clearTimeout(saveTimer); doSave(); } else if (dirty && !saving){ clearTimeout(saveTimer); doSave(); } return; }
+  refreshFromRepo(false);
+});
+
+window.addEventListener('beforeunload', e => { if (typeof noteFlush === 'function') noteFlush(); if (dirty || uploading){ e.preventDefault(); e.returnValue = ''; } });
 async function boot(){
   dbState = 'locked'; render();
   try { const k = await importStoredKey(); if (k){ key = k; dbState = 'loading'; render(); await openWithKey(); } }
@@ -2041,7 +2073,7 @@ document.addEventListener('change', e => { if (e.target && e.target.id === 'imgp
 // ---------- events ----------
 let toastTimer = null;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
-function setView(v){ view = v; selected = null; editingPart = null; outlineEditing = null; addForm = null; removing = null; ast.sel = null; try { localStorage.setItem('rb.view', v); } catch(e){} render(); }
+function setView(v){ if (view === 'logs'){ noteExit(); logEditFlush(); } view = v; selected = null; editingPart = null; outlineEditing = null; addForm = null; removing = null; ast.sel = null; try { localStorage.setItem('rb.view', v); } catch(e){} render(); }
 function mapKeyOf(el){ const sec = el.closest('.mapsec'); return sec ? sec.id.replace('map-', '') : null; }
 
 document.addEventListener('click', e => {
@@ -2092,8 +2124,14 @@ document.addEventListener('click', e => {
       if (l && t){ const text = t.value.trim(); if (!text){ t.focus(); return; } l.text = text; if (d && /^\d{4}-\d{2}-\d{2}$/.test(d.value) && d.value !== l.date){ l.date = d.value; if (view === 'logs'){ cal.open = l.date; cal.sel = l.date; cal.ym = l.date.slice(0, 7); } } l.updated = stampNow(); }
       logEditing = null; commit(); toast('Entry saved.'); return;
     }
+    if (a === 'note-save'){ const changed = noteExit(); if (!changed){ renderDayPanel(); if (pendingRender) render(); } toast(changed ? 'Note saved.' : 'No changes.'); return; }
+    if (a === 'note-cancel'){
+      clearTimeout(noteDraftTimer); const t = $('#noteedit'); const d = t ? t.dataset.day : null;
+      if (noteOrig && d && noteOrig.day === d){ const notes = notesOf(); if (noteOrig.note) notes[d] = noteOrig.note; else delete notes[d]; noteOrig = null; noteEditing = false; commit(); toast('Note put back.'); return; }
+      noteOrig = null; noteEditing = false; renderDayPanel(); if (pendingRender) render(); return;
+    }
     if (a === 'log-remove-ask'){ removing = {kind: 'log', id: act.dataset.id}; logEditing = null; render(true); return; }
-    if (a === 'note-delete'){ const d = act.dataset.day; if (d){ notesOf()[d] = {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note deleted.'); return; }
+    if (a === 'note-delete'){ clearTimeout(noteDraftTimer); noteOrig = null; const d = act.dataset.day; if (d){ notesOf()[d] = {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note deleted.'); return; }
     if (a === 'stage-move'){ moveStage(act.dataset.id, Number(act.dataset.dir)); return; }
     if (a === 'outline-edit'){ outlineEditing = {kind: act.dataset.kind, id: act.dataset.id}; render(true); const t = $('#outlineedit'); if (t) t.focus(); return; }
     if (a === 'outline-cancel'){ outlineEditing = null; render(); return; }
@@ -2106,10 +2144,8 @@ document.addEventListener('click', e => {
     if (a === 'close-part-route'){ pst.part = null; selected = pst.stage; outlineEditing = null; render(); return; }
     if (a === 'close-act'){ pst.act = null; selected = null; outlineEditing = null; addForm = null; render(); return; }
     if (a === 'open-day'){ openDay(act.dataset.day, true); return; }
-    if (a === 'close-day'){ cal.open = null; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
-    if (a === 'note-edit'){ noteEditing = true; renderDayPanel(); const t = $('#noteedit'); if (t) t.focus(); return; }
-    if (a === 'note-cancel'){ noteEditing = false; renderDayPanel(); if (pendingRender) render(); return; }
-    if (a === 'note-save'){ const t = $('#noteedit'); const d = act.dataset.day; if (t && d){ const txt = t.value.trim(); const notes = notesOf(); notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note saved.'); return; }
+    if (a === 'close-day'){ noteExit(); logEditFlush(); cal.open = null; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
+    if (a === 'note-edit'){ noteEditing = true; noteOrig = null; renderDayPanel(); const t = $('#noteedit'); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
     if (a === 'anchor-comment'){ startAnchoredComment(); return; }
     if (a === 'img-pick'){ imgTarget = act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
     if (a === 'anchor-clear'){ pendingAnchor = null; refreshCmts(act.closest('.cmtform').dataset.target); return; }
@@ -2179,6 +2215,7 @@ document.addEventListener('change', e => {
   if (e.target.name === 'stage') fillDecision();
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'noteedit'){ noteEditing = true; clearTimeout(noteDraftTimer); noteDraftTimer = setTimeout(noteFlush, 1500); return; }
   if (e.target.name === 'newtext' && e.target.value.trim()){ const r = e.target.closest('#logform').querySelector('input[name=outcome][value=reshaped]'); if (r) r.checked = true; }
 });
 document.addEventListener('submit', e => {
@@ -2205,7 +2242,7 @@ document.addEventListener('keydown', e => {
       if (selected){ selected = null; applySelection(); }
       return;
     }
-    if (view === 'logs'){ if (noteEditing){ noteEditing = false; renderDayPanel(); if (pendingRender) render(); return; } if (cal.open){ cal.open = null; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); return; } if (selected){ selected = null; applySelection(); } return; }
+    if (view === 'logs'){ if (noteEditing){ const changed = noteExit(); if (!changed){ renderDayPanel(); if (pendingRender) render(); } return; } if (cal.open){ cal.open = null; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); return; } if (selected){ selected = null; applySelection(); } return; }
     if (view === 'plan'){
       if (removing){ removing = null; render(true); return; }
       if (addForm){ addForm = null; render(true); return; }
