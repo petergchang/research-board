@@ -236,10 +236,20 @@ textarea.outline{font-family:var(--mono);font-size:13px;line-height:1.5;min-heig
 .day .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
 .day .dot.result{background:var(--run)} .day .dot.decision{background:var(--warn)} .day .dot.note{background:var(--ink-3)}
 .day.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.daynote{padding:6px 26px 0}
-.daynote textarea{min-height:380px;font-size:15.5px;line-height:1.6;padding:14px 16px;resize:none;overflow:hidden;border-radius:10px;font-family:var(--body)}
+.daynote{padding:2px 26px 0}
+.dsec{margin-top:12px}
+.dsec-head{display:flex;align-items:baseline;gap:12px;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.dsec-head .link{margin-left:auto;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none}
+.dsec-head .link.dim{color:var(--ink-3)} .dsec-head .link.dim:hover{color:var(--bad)}
+.dsec-head .link + .link{margin-left:0}
+.dsec textarea{margin-top:6px}
+.dsec .notebody{margin-top:6px}
+.dsec.empty .dsec-head{opacity:.7}
+.dsec[data-sec="goals"] .notebody .md,.dsec[data-sec="review"] .notebody .md{font-size:15.5px}
+.daytools{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.daynote textarea{min-height:110px;font-size:15.5px;line-height:1.6;padding:14px 16px;resize:none;overflow:hidden;border-radius:10px;font-family:var(--body)}
 .daynote textarea:focus{border-color:var(--accent)}
-.notebody{font-family:var(--display);font-size:16.5px;line-height:1.55;max-width:72ch;min-height:120px}
+.notebody{font-family:var(--display);font-size:16.5px;line-height:1.55;max-width:72ch}
 .notebody .md{font-size:16.5px}
 .notebody .md > * + *{margin-top:9px}
 .md{font-size:14.5px;line-height:1.5}
@@ -1247,12 +1257,12 @@ function calendarHtml(){
   const cells = monthCells(cal.ym); const notes = notesOf();
   const grid = cells.map(d => {
     if (!d) return `<div class="day blank"></div>`;
-    const note = notes[d]; const es = dayEntries(d); const hasNote = !!(note && note.text);
-    const ex = hasNote ? mdPlain(note.text) : '';
+    const note = notes[d]; const es = dayEntries(d); const hasNote = noteHas(note);
+    const ex = hasNote ? mdPlain(note.goals || note.text || note.review) : '';
     const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '');
     return `<div class="day node${d === TODAY ? ' today' : ''}${hasNote ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" title="${esc(longDate(d))}${ex ? ' — ' + esc(ex) : ''}" aria-label="${esc(longDate(d))}${hasNote ? ', has a note' : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
   }).join('');
-  const nNotes = Object.keys(notes).filter(k => notes[k] && notes[k].text).length;
+  const nNotes = Object.keys(notes).filter(k => noteHas(notes[k])).length;
   return `<div class="calhead"><button class="btn small" data-action="cal-prev" aria-label="Previous month">←</button><h3>${esc(ymLabel(cal.ym))}</h3><button class="btn small" data-action="cal-next" aria-label="Next month">→</button></div>
     <div class="cal"><div class="dow">${DOW.map(x => `<span>${x[0]}</span>`).join('')}</div><div class="grid">${grid}</div></div>
     <div class="calfoot"><button class="btn small ghost" data-action="cal-today">Today</button><span class="faint">${nNotes} ${nNotes === 1 ? 'note' : 'notes'} · ${state.log.length} ${state.log.length === 1 ? 'entry' : 'entries'}</span></div>`;
@@ -1272,16 +1282,47 @@ function gotoDay(d){
   renderCalendar(); renderDayPanel();
   const p = document.getElementById('panelbox-logs'); if (p) p.scrollIntoView({block: 'start', behavior: prefersReduced() ? 'auto' : 'smooth'});
 }
+// a day has three parts: goals, notes, review. Each is Markdown; each can be edited on its own.
+const DAY_SECS = [
+  {k:'goals',  id:'goalsedit',  src:'goals',  title:'Goals for today',   min:110, ph:'What you want to get done today. One per line; - [ ] makes a box you can tick off.'},
+  {k:'text',   id:'noteedit',   src:'note',   title:'Notes',             min:300, ph:'What happened, what you tried, what you learned.'},
+  {k:'review', id:'reviewedit', src:'review', title:'End-of-day review', min:120, ph:'What got done, what did not and why, what to do tomorrow.'},
+];
+const NOTE_IDS = DAY_SECS.map(x => x.id);
+const isNoteTA = el => !!(el && NOTE_IDS.includes(el.id));
+let editSecs = new Set(), lastNoteTA = 'noteedit';
+const noteHas = n => !!(n && !n.deleted && (n.text || n.goals || n.review));
+function carrySource(d){ const notes = notesOf(); const days = Object.keys(notes).filter(k => k < d && notes[k] && !notes[k].deleted && notes[k].goals).sort(); return days.length ? days[days.length - 1] : null; }
+function carryGoals(d){
+  const src = carrySource(d); const t = $('#goalsedit'); if (!src || !t) return;
+  const lines = String(notesOf()[src].goals).split('\n');
+  const isTask = l => /^\s*([-*+]|\d+[.)])\s+\[( |x|X)\]/.test(l), open = l => /^\s*([-*+]|\d+[.)])\s+\[ \]/.test(l);
+  const hasTasks = lines.some(isTask);
+  const out = (hasTasks ? lines.filter(open) : lines).join('\n').trim();
+  if (!out){ toast('Everything from ' + fmt(src) + ' was ticked off.'); return; }
+  t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + out; t.dispatchEvent(new Event('input', {bubbles: true})); t.focus();
+}
 function renderDayPanel(){
   const host = document.getElementById('panel-logs'); if (!host) return;
   const d = cal.open; if (!d){ host.innerHTML = `<div class="dayempty"><p>Pick a day on the calendar, or</p><button class="btn" data-action="cal-today">Open today</button></div>`; return; }
-  const note = notesOf()[d]; const es = dayEntries(d);
-  const hasText = !!(note && note.text);
-  const noteHtml = (noteEditing || !hasText)
-    ? `<textarea id="noteedit" data-day="${d}" placeholder="${d === TODAY ? 'What happened today, what you tried, what you learned, what to do tomorrow.' : 'Notes for this day.'}">${esc(hasText ? note.text : '')}</textarea><div class="tools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editor">Done</button>${hasText ? `<button class="btn small" data-action="note-cancel" title="Put the note back the way it was when you started editing">Cancel</button><button class="btn small danger" data-action="note-delete" data-day="${d}">Delete note</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="noteedit">Attach image</button><span class="notestatus" id="notestatus"></span><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images. Autosaves every 2 minutes and whenever you leave the day.</span></div>`
-    : `<div class="notebody">${md(note.text, 'note:' + d)}</div><div class="tools"><button class="btn small" data-action="note-edit">Edit note</button><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>`;
+  const note = notesOf()[d] || {}; const alive = !note.deleted; const es = dayEntries(d);
+  const val = k => alive && note[k] ? note[k] : '';
+  const editingOf = sc => editSecs.has(sc.k) || (!val(sc.k) && d >= TODAY);
+  const anyEditing = DAY_SECS.some(editingOf);
+  const secs = DAY_SECS.map(sc => {
+    const v = val(sc.k);
+    if (editingOf(sc)){
+      const carry = sc.k === 'goals' && !v ? carrySource(d) : null;
+      return `<section class="dsec editing" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span>${carry ? `<button class="link" data-action="goals-carry" data-day="${d}" title="Copy the goals that were not ticked off">Carry over from ${esc(fmt(carry))}</button>` : ''}${v ? `<button class="link dim" data-action="note-clear" data-sec="${sc.k}">Clear</button>` : ''}</div><textarea id="${sc.id}" data-day="${d}" data-sec="${sc.k}" data-min="${sc.min}" placeholder="${sc.ph}">${esc(v)}</textarea></section>`;
+    }
+    if (!v) return `<section class="dsec empty" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span><button class="link" data-action="note-edit" data-sec="${sc.k}">Add</button></div></section>`;
+    return `<section class="dsec" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span><button class="link" data-action="note-edit" data-sec="${sc.k}">Edit</button></div><div class="notebody">${md(v, sc.src + ':' + d)}</div></section>`;
+  }).join('');
+  const tools = anyEditing
+    ? `<div class="tools daytools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editors">Done</button>${noteHas(note) ? `<button class="btn small" data-action="note-cancel" title="Put the day back the way it was when you started editing">Cancel</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="__last">Attach image</button><span class="notestatus" id="notestatus"></span><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images. Autosaves every 2 minutes and whenever you leave the day.</span></div>`
+    : (noteHas(note) ? `<div class="tools"><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>` : '');
   host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}${d === TODAY ? ' <span class="todaytag">today</span>' : ''}<span class="daynav"><button class="btn small" data-action="day-prev" title="Previous day">←</button><button class="btn small" data-action="day-next" title="Next day">→</button>${d === TODAY ? '' : `<button class="btn small ghost" data-action="cal-today">Today</button>`}</span></h2></header>
-    <div class="daynote">${noteHtml}</div>
+    <div class="daynote">${secs}${tools}</div>
     <div class="inside"><div class="label"><span>Logged against the plan this day</span><span></span></div>
       ${es.length ? `<ul class="log" style="margin-top:8px">${es.map(logEntryHtml).join('')}</ul>` : '<p class="faint" style="margin-top:6px">Nothing yet.</p>'}
       <div class="tools" style="margin-top:10px"><button class="btn small" data-action="new-log" data-date="${d}">+ Log a result, decision or note on this day</button></div>
@@ -1291,23 +1332,25 @@ function renderDayPanel(){
   typeset(host);
   if (typeof applyHighlights === 'function') applyHighlights(host);
   applySelection();
-  const ta = document.getElementById('noteedit'); if (ta) autoGrow(ta);
+  host.querySelectorAll('textarea[data-sec]').forEach(autoGrow);
 }
-function autoGrow(t){ t.style.height = 'auto'; t.style.height = Math.max(380, t.scrollHeight + 4) + 'px'; }
+function autoGrow(t){ const min = Number(t.dataset.min) || 380; t.style.height = 'auto'; t.style.height = Math.max(min, t.scrollHeight + 4) + 'px'; }
 // the note editor saves as you type, and always before the panel changes under it
 let noteDraftTimer = null, noteOrig = null;
 function noteFlush(){
-  const t = document.getElementById('noteedit'); if (!t) return false;
-  const d = t.dataset.day; if (!d) return false;
-  const txt = t.value.trim(); const notes = notesOf(); const cur = notes[d] && !notes[d].deleted ? (notes[d].text || '') : '';
-  if (txt === cur) return false;
+  const tas = Array.from(document.querySelectorAll('textarea[data-sec][data-day]')); if (!tas.length) return false;
+  const d = tas[0].dataset.day; const notes = notesOf(); const cur = notes[d] && !notes[d].deleted ? notes[d] : {};
+  const next = {text: cur.text || '', goals: cur.goals || '', review: cur.review || ''};
+  for (const t of tas) next[t.dataset.sec] = t.value.trim();
+  if (next.text === (cur.text || '') && next.goals === (cur.goals || '') && next.review === (cur.review || '')) return false;
   if (noteOrig && noteOrig.day !== d) noteOrig = null;
   if (!noteOrig) noteOrig = {day: d, note: notes[d] ? JSON.parse(JSON.stringify(notes[d])) : null};
-  notes[d] = txt ? {text: txt, updated: TODAY, stamp: stampNow()} : {text: '', updated: TODAY, stamp: stampNow(), deleted: true};
+  const empty = !next.text && !next.goals && !next.review;
+  notes[d] = empty ? {text: '', updated: TODAY, stamp: stampNow(), deleted: true} : {text: next.text, goals: next.goals, review: next.review, updated: TODAY, stamp: stampNow()};
   commit(); noteStatus(''); return true;
 }
 function noteStatus(msg){ const el = document.getElementById('notestatus'); if (el) el.textContent = msg; }
-function noteExit(){ clearTimeout(noteDraftTimer); noteEditing = false; const changed = noteFlush(); noteOrig = null; return changed; }
+function noteExit(){ clearTimeout(noteDraftTimer); noteEditing = false; editSecs.clear(); const changed = noteFlush(); noteOrig = null; return changed; }
 function logEditFlush(){
   if (!logEditing) return false;
   const l = find(state.log, logEditing); const t = $('#logedit-text'), d = $('#logedit-date'); logEditing = null;
@@ -1834,7 +1877,7 @@ async function doSave(){
   } finally { saving = false; if (saveQueued){ saveQueued = false; doSave(); } }
 }
 function cmtTyping(){ return Array.prototype.some.call(document.querySelectorAll('.cmtform textarea'), t => t.value.trim()); }
-function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping() || (a && a.id === 'noteedit')); }
+function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping() || isNoteTA(a)); }
 async function refreshFromRepo(manual){
   if (dbState !== 'ready' || !token) return;
   if (saving || dirty){ if (manual) toast('There are unsaved changes; save first.'); return; }
@@ -2110,7 +2153,7 @@ function hydrateImages(root){
 }
 function openLightbox(src, alt){ const lb = document.getElementById('lightbox'); if (!lb) return; const im = lb.querySelector('img'); im.src = src; im.alt = alt || ''; lb.hidden = false; }
 function closeLightbox(){ const lb = document.getElementById('lightbox'); if (lb && !lb.hidden){ lb.hidden = true; lb.querySelector('img').removeAttribute('src'); return true; } return false; }
-const IMG_TA = '#noteedit, #logedit-text, .cmtform textarea, #logform textarea';
+const IMG_TA = '#noteedit, #goalsedit, #reviewedit, #logedit-text, .cmtform textarea, #logform textarea';
 document.addEventListener('paste', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
 document.addEventListener('dragover', e => { const t = e.target; if (t && t.matches && t.matches(IMG_TA)) e.preventDefault(); });
 document.addEventListener('drop', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
@@ -2171,12 +2214,14 @@ document.addEventListener('click', e => {
       if (l && t){ const text = t.value.trim(); if (!text){ t.focus(); return; } l.text = text; if (d && /^\d{4}-\d{2}-\d{2}$/.test(d.value) && d.value !== l.date){ l.date = d.value; if (view === 'logs'){ cal.open = l.date; cal.sel = l.date; cal.ym = l.date.slice(0, 7); } } l.updated = stampNow(); }
       logEditing = null; commit(); toast('Entry saved.'); return;
     }
-    if (a === 'note-save-keep'){ clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Note saved.' : 'Nothing new to save.'); const t = $('#noteedit'); if (t) t.focus(); return; }
+    if (a === 'note-save-keep'){ clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Saved.' : 'Nothing new to save.'); const t = document.getElementById(lastNoteTA) || $('#noteedit'); if (t) t.focus(); return; }
+    if (a === 'note-clear'){ const t = document.querySelector(`textarea[data-sec="${act.dataset.sec}"]`); if (t){ t.value = ''; t.dispatchEvent(new Event('input', {bubbles: true})); t.focus(); } return; }
+    if (a === 'goals-carry'){ carryGoals(act.dataset.day); return; }
     if (a === 'note-save'){ const changed = noteExit(); if (!changed){ renderDayPanel(); if (pendingRender) render(); } toast(changed ? 'Note saved.' : 'No changes.'); return; }
     if (a === 'note-cancel'){
-      clearTimeout(noteDraftTimer); const t = $('#noteedit'); const d = t ? t.dataset.day : null;
-      if (noteOrig && d && noteOrig.day === d){ const notes = notesOf(); if (noteOrig.note) notes[d] = noteOrig.note; else delete notes[d]; noteOrig = null; noteEditing = false; commit(); toast('Note put back.'); return; }
-      noteOrig = null; noteEditing = false; renderDayPanel(); if (pendingRender) render(); return;
+      clearTimeout(noteDraftTimer); const t = document.querySelector('textarea[data-sec][data-day]'); const d = t ? t.dataset.day : null;
+      if (noteOrig && d && noteOrig.day === d){ const notes = notesOf(); if (noteOrig.note) notes[d] = noteOrig.note; else delete notes[d]; noteOrig = null; noteEditing = false; editSecs.clear(); commit(); toast('Put back.'); return; }
+      noteOrig = null; noteEditing = false; editSecs.clear(); renderDayPanel(); if (pendingRender) render(); return;
     }
     if (a === 'log-remove-ask'){ removing = {kind: 'log', id: act.dataset.id}; logEditing = null; render(true); return; }
     if (a === 'note-delete'){ clearTimeout(noteDraftTimer); noteOrig = null; const d = act.dataset.day; if (d){ notesOf()[d] = {text: '', updated: TODAY, stamp: stampNow(), deleted: true}; } noteEditing = false; commit(); toast('Note deleted.'); return; }
@@ -2193,9 +2238,9 @@ document.addEventListener('click', e => {
     if (a === 'close-act'){ pst.act = null; selected = null; outlineEditing = null; addForm = null; render(); return; }
     if (a === 'open-day'){ openDay(act.dataset.day, true); return; }
     if (a === 'close-day'){ noteExit(); logEditFlush(); cal.open = null; cal.closed = true; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
-    if (a === 'note-edit'){ noteEditing = true; noteOrig = null; renderDayPanel(); const t = $('#noteedit'); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
+    if (a === 'note-edit'){ const sc = DAY_SECS.find(x => x.k === act.dataset.sec) || DAY_SECS[1]; editSecs.add(sc.k); noteEditing = true; renderDayPanel(); const t = document.getElementById(sc.id); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
     if (a === 'anchor-comment'){ startAnchoredComment(); return; }
-    if (a === 'img-pick'){ imgTarget = act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
+    if (a === 'img-pick'){ imgTarget = act.dataset.for === '__last' ? (lastNoteTA || 'noteedit') : act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
     if (a === 'anchor-clear'){ pendingAnchor = null; refreshCmts(act.closest('.cmtform').dataset.target); return; }
     if (a === 'show-comment'){ showComment(act.dataset.cid); return; }
     if (a === 'show-anchor'){ showAnchor(act.dataset.target, act.dataset.cid); return; }
@@ -2247,6 +2292,8 @@ document.addEventListener('change', e => {
     const box = e.target.closest('.md[data-src]'); if (!box) return;
     const src = box.dataset.src; const n = Number(e.target.dataset.task); const on = e.target.checked;
     if (src.startsWith('note:')){ const nt = notesOf()[src.slice(5)]; if (nt && nt.text){ nt.text = mdToggleTask(nt.text, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
+    else if (src.startsWith('goals:')){ const nt = notesOf()[src.slice(6)]; if (nt && nt.goals){ nt.goals = mdToggleTask(nt.goals, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
+    else if (src.startsWith('review:')){ const nt = notesOf()[src.slice(7)]; if (nt && nt.review){ nt.review = mdToggleTask(nt.review, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
     else if (src.startsWith('log:')){ const l = find(state.log, src.slice(4)); if (l){ l.text = mdToggleTask(l.text, n, on); l.updated = stampNow(); } }
     else if (src.startsWith('cmt:') && typeof findComment === 'function'){ const rest = src.slice(4); const k = rest.indexOf(':'); const c = findComment(rest.slice(k + 1), rest.slice(0, k)); if (c){ c.text = mdToggleTask(c.text, n, on); c.updated = stampNow(); } }
     commit(); return;
@@ -2262,8 +2309,9 @@ document.addEventListener('change', e => {
   if (e.target.name === 'activity') fillPropagate();
   if (e.target.name === 'stage') fillDecision();
 });
+document.addEventListener('focusin', e => { if (isNoteTA(e.target)) lastNoteTA = e.target.id; });
 document.addEventListener('input', e => {
-  if (e.target.id === 'noteedit'){ noteEditing = true; autoGrow(e.target); noteStatus('Unsaved changes'); clearTimeout(noteDraftTimer); noteDraftTimer = setTimeout(noteFlush, 120000); return; }
+  if (isNoteTA(e.target)){ noteEditing = true; editSecs.add(e.target.dataset.sec); autoGrow(e.target); noteStatus('Unsaved changes'); clearTimeout(noteDraftTimer); noteDraftTimer = setTimeout(noteFlush, 120000); return; }
   if (e.target.name === 'newtext' && e.target.value.trim()){ const r = e.target.closest('#logform').querySelector('input[name=outcome][value=reshaped]'); if (r) r.checked = true; }
 });
 document.addEventListener('submit', e => {
@@ -2274,7 +2322,7 @@ document.addEventListener('submit', e => {
   if (e.target.classList.contains('cmtform')){ e.preventDefault(); postComment(e.target); return; }
 });
 document.addEventListener('keydown', e => {
-  if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey) && e.target && e.target.id === 'noteedit'){ e.preventDefault(); clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Note saved.' : 'Nothing new to save.'); return; }
+  if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey) && isNoteTA(e.target)){ e.preventDefault(); clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Note saved.' : 'Nothing new to save.'); return; }
   if ((e.key === 'Enter') && (e.metaKey || e.ctrlKey) && e.target && e.target.closest && e.target.closest('.cmtform')){ e.preventDefault(); postComment(e.target.closest('.cmtform')); return; }
   if (e.key === 'Escape'){
     if (closeLightbox()) return;
@@ -2304,7 +2352,7 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && e.target && (e.target.id === 'noteedit' || e.target.id === 'logedit-text')){
+  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && e.target && (isNoteTA(e.target) || e.target.id === 'logedit-text')){
     const t = e.target; const st0 = t.selectionStart; if (st0 !== t.selectionEnd) return;
     const before = t.value.slice(0, st0), after = t.value.slice(st0); const line = before.slice(before.lastIndexOf('\n') + 1);
     const m = line.match(/^(\s*)([-*+]|\d+[.)])(\s+)(\[( |x|X)\]\s*)?(.*)$/); if (!m) return;
@@ -2315,7 +2363,7 @@ document.addEventListener('keydown', e => {
     const ins = '\n' + m[1] + marker + m[3] + (m[4] ? '[ ] ' : '');
     t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length; return;
   }
-  if (e.key === 'Tab' && e.target && (e.target.id === 'outlineedit' || e.target.id === 'noteedit' || e.target.id === 'logedit-text')){
+  if (e.key === 'Tab' && e.target && (e.target.id === 'outlineedit' || isNoteTA(e.target) || e.target.id === 'logedit-text')){
     e.preventDefault(); const t = e.target; const st0 = t.selectionStart, en0 = t.selectionEnd;
     const before = t.value.slice(0, st0), after = t.value.slice(en0);
     const lineStart = before.lastIndexOf('\n') + 1;
