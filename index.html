@@ -6,7 +6,9 @@
 <title>CMK Routebook</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400..700;1,400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script>
 window.MathJax = {
   tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
@@ -565,6 +567,279 @@ mark.hl:hover{background:var(--accent-line)}
 .flash{animation:rbflash 1.4s ease-out}
 @keyframes rbflash{0%{background:var(--warn-soft);box-shadow:0 0 0 3px var(--warn-soft)}100%{}}
 .cmt.flash{background:var(--warn-soft)}
+
+/* =====================================================================
+   Routebook, second edition: a research notebook on a desk.
+   Desk: pale sage with a faint graph-paper grid. Pages: white paper.
+   Ink: blue-black text, ballpoint-blue accent, highlighter yellow for
+   what needs a second look (today, anchored comments).
+   Type: Literata for reading and writing, Atkinson Hyperlegible Next for
+   the interface, IBM Plex Mono only for page numbers and IDs.
+   ===================================================================== */
+:root{
+  --bg:#ECEFEA; --surface:#FFFFFF; --surface-2:#F3F6F2; --surface-3:#E7ECE6;
+  --ink:#1C2826; --ink-2:#465451; --ink-3:#6F7D79;
+  --line:#D2DAD4; --line-2:#E3E9E4;
+  --accent:#2A55A0; --accent-ink:#1E4180; --accent-soft:#E7EEF9; --accent-line:#B3C5E5; --on-accent:#FFFFFF;
+  --hl:#F4D65E; --hl-soft:#FBEFB8; --on-hl:#1C2826;
+  --ok:#2E7A4D; --ok-soft:#E1F0E6;
+  --warn:#96600F; --warn-soft:#F7ECD5;
+  --bad:#AF3D2D; --bad-soft:#F7E2DD;
+  --run:#1D7580; --run-soft:#DDEFF0;
+  --grid:rgba(52,104,84,.07);
+  --shadow:0 1px 2px rgba(28,40,38,.05), 0 10px 28px -10px rgba(28,40,38,.16);
+  --paper:0 1px 0 rgba(28,40,38,.04), 0 12px 32px -14px rgba(28,40,38,.2);
+  --display:'Literata', 'Iowan Old Style', Georgia, serif;
+  --read:'Literata', 'Iowan Old Style', Georgia, serif;
+  --body:'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  --mono:'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --sheet-pad:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121715; --surface:#1B2120; --surface-2:#222A28; --surface-3:#2B3431;
+    --ink:#E3EAE7; --ink-2:#AEBBB7; --ink-3:#83918D;
+    --line:#303B38; --line-2:#28312F;
+    --accent:#93B3F0; --accent-ink:#B7CCF6; --accent-soft:#1F2A40; --accent-line:#415D90; --on-accent:#0E1A2E;
+    --hl:#D9BC4C; --hl-soft:#3A351F; --on-hl:#1B1705;
+    --ok:#6CC08E; --ok-soft:#183424;
+    --warn:#E3A95A; --warn-soft:#3A2C16;
+    --bad:#EC7A66; --bad-soft:#3E211B;
+    --run:#62C3CE; --run-soft:#173237;
+    --grid:rgba(170,210,190,.045);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -10px rgba(0,0,0,.5);
+    --paper:0 1px 0 rgba(0,0,0,.25), 0 14px 36px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121715; --surface:#1B2120; --surface-2:#222A28; --surface-3:#2B3431;
+  --ink:#E3EAE7; --ink-2:#AEBBB7; --ink-3:#83918D;
+  --line:#303B38; --line-2:#28312F;
+  --accent:#93B3F0; --accent-ink:#B7CCF6; --accent-soft:#1F2A40; --accent-line:#415D90; --on-accent:#0E1A2E;
+  --hl:#D9BC4C; --hl-soft:#3A351F; --on-hl:#1B1705;
+  --ok:#6CC08E; --ok-soft:#183424;
+  --warn:#E3A95A; --warn-soft:#3A2C16;
+  --bad:#EC7A66; --bad-soft:#3E211B;
+  --run:#62C3CE; --run-soft:#173237;
+  --grid:rgba(170,210,190,.045);
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -10px rgba(0,0,0,.5);
+  --paper:0 1px 0 rgba(0,0,0,.25), 0 14px 36px -14px rgba(0,0,0,.6);
+}
+
+/* ---------- ground ---------- */
+body{background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px, transparent 1px),linear-gradient(90deg, var(--grid) 1px, transparent 1px);background-size:24px 24px;background-attachment:fixed;font-family:var(--body);font-size:15px;line-height:1.5;color:var(--ink)}
+::selection{background:var(--accent-soft)}
+input[type=checkbox]{accent-color:var(--accent)}
+select,textarea,input[type=text],input[type=password],input[type=date]{border-color:var(--line);border-radius:8px;background:var(--surface)}
+select:focus,textarea:focus,input:focus{outline:none;border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+::placeholder{color:var(--ink-3);opacity:1}
+
+/* ---------- header ---------- */
+.top{gap:18px;padding:10px 22px;background:var(--surface);border-bottom:1px solid var(--line)}
+.top h1.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;margin:0;font:inherit;white-space:nowrap;overflow:hidden}
+.brand .mark{width:26px;height:26px;color:var(--accent);flex:0 0 auto}
+.brand .bname{font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.brand .bfull{font-family:var(--display);font-size:16px;font-weight:400;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tabs{background:transparent;padding:0;gap:2px;border-radius:0}
+.tabs button{padding:7px 13px;border-radius:8px;font-size:15px;font-weight:600;color:var(--ink-2);transition:background .12s ease,color .12s ease}
+.tabs button:hover{background:var(--surface-2);color:var(--ink)}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent-ink);box-shadow:none}
+.topacts{display:flex;gap:8px;align-items:center;flex:0 0 auto}
+.btn{border-radius:8px;border-color:var(--line);transition:background .12s ease,border-color .12s ease,color .12s ease}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+.btn.ghost:hover{background:var(--accent-soft);border-color:transparent}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--ink-3);font-weight:500;padding-left:0}
+.btn.quiet:hover{color:var(--accent)}
+.cmtbtn .cpill{margin-left:2px}
+@media (max-width:999px){ .top{flex-wrap:wrap} }
+@media (max-width:760px){
+  .top{padding:8px 14px 0;gap:6px 10px}
+  .brand .bfull{display:none}
+  .top .tabs{order:3;width:100%;border-top:1px solid var(--line-2);padding:4px 0}
+  .top .tabs button{flex:1;padding:8px 6px}
+  .btn.logbtn{display:none}
+}
+
+/* ---------- footer ---------- */
+.foot{padding:6px 22px;gap:16px;font-size:12.5px;background:var(--surface);border-top:1px solid var(--line)}
+.foot .spacer{flex:1}
+.foot .link.quiet{color:var(--ink-3);font-weight:500}
+.foot .link.quiet:hover{color:var(--accent)}
+.sync{color:var(--ink-3)}
+
+/* ---------- logs: calendar column ---------- */
+.plantab{padding:22px 22px 0}
+.routemain{padding-bottom:48px}
+.routemain.logs{max-width:1140px;grid-template-columns:256px minmax(0,1fr);gap:30px}
+.calside{gap:16px;top:0}
+.caltoggle{display:none}
+.calcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 10px 8px;box-shadow:0 1px 0 rgba(28,40,38,.03)}
+.calside .calhead{display:flex;align-items:center;gap:4px;margin:0 0 6px}
+.calside .calhead h3{flex:1;text-align:center;font-family:var(--display);font-size:17px;font-weight:600;min-width:0}
+.navbtn{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-size:20px;line-height:1;color:var(--ink-2);border:1px solid transparent}
+.navbtn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--line-2)}
+.calside .cal{border:0;background:none;padding:0;border-radius:0}
+.calside .cal .dow{gap:2px;padding:0 0 4px;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink-3)}
+.calside .cal .grid{gap:2px}
+.calside .day{min-height:34px;padding:2px;border:0;border-radius:8px;background:transparent;gap:1px;align-items:center;justify-content:center}
+.calside .day:hover{background:var(--surface-2)}
+.calside .day .dn{font-family:var(--read);font-size:14px;font-variant-numeric:lining-nums tabular-nums;color:var(--ink-2);line-height:22px;min-width:24px;text-align:center;border-radius:999px}
+.calside .cal .grid .day:nth-child(7n+6) .dn,.calside .cal .grid .day:nth-child(7n) .dn{color:var(--ink-3)}
+.calside .day.has-note{background:var(--accent-soft)}
+.calside .cal .grid .day.has-note .dn{color:var(--accent-ink);font-weight:700}
+.calside .cal .grid .day.today .dn{background:var(--hl);color:var(--on-hl);font-weight:700;padding:0 5px}
+.calside .day.future{opacity:1}
+.calside .cal .grid .day.future:not(.today) .dn{color:var(--ink-3)}
+.calside .day.sel{background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.calside .day .dots{height:4px;margin:0;gap:2px}
+.calside .day .dot{width:4px;height:4px}
+.calfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:30px;padding:6px 2px 0;margin-top:6px;border-top:1px solid var(--line-2);font-size:12.5px}
+.calfoot .btn.on{color:var(--ink-3);font-weight:500}
+.recent h4{font-size:13px;font-weight:700;color:var(--ink-2);margin:0 0 4px 8px}
+.recent ul{display:grid;gap:1px}
+.pagelink{display:grid;gap:1px;width:100%;text-align:left;padding:6px 8px;border-radius:8px;border:1px solid transparent}
+.pagelink:hover{background:var(--surface);border-color:var(--line-2)}
+.pagelink.sel{background:var(--surface);border-color:var(--line)}
+.pagelink .pd{font-size:12px;font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.pagelink .px{font-family:var(--read);font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- logs: the page ---------- */
+.sheet{position:relative;max-width:820px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--paper);padding:26px var(--sheet-pad) 30px}
+.sheethead{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 16px;padding-bottom:16px;border-bottom:1px solid var(--line-2)}
+.sheetmeta{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;min-width:0;font-size:12.5px;color:var(--ink-3)}
+.pageno{font-family:var(--mono);font-size:12px;letter-spacing:.02em;word-spacing:-.3em;color:var(--ink-2)}
+.sheetmeta .link{font-weight:500;color:var(--ink-3)}
+.sheetmeta .link:hover{color:var(--accent)}
+.daynav{display:inline-flex;align-items:center;gap:4px;margin:0}
+.daynav .btn{padding:4px 10px;font-size:13px}
+.sheetdate{grid-column:1 / -1;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin:2px 0 0;font-family:var(--display);font-size:32px;font-weight:600;line-height:1.15;letter-spacing:-.015em;color:var(--ink)}
+.sheetdate .yr{font-size:.6em;font-weight:400;color:var(--ink-3);letter-spacing:0}
+.todaytag{align-self:center;font-family:var(--body);font-size:12.5px;font-weight:700;letter-spacing:.01em;text-transform:none;color:var(--on-hl);background:var(--hl);padding:2px 10px;border-radius:999px}
+
+.daynote{padding:0}
+.dsec{margin-top:24px}
+.dsec-head{display:flex;align-items:baseline;gap:4px 14px;flex-wrap:wrap;font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-2)}
+.dsec-head .label{font-family:var(--body);font-size:14px;font-weight:700;color:var(--ink-2)}
+.dsec-head .link{margin-left:0;font-size:13px;font-weight:600;color:var(--ink-3)}
+.dsec-head .link:hover{color:var(--accent)}
+.dsec-head .link[data-action="goals-carry"]{color:var(--accent)}
+.dsec .notebody{margin-top:8px}
+.dsec.empty{margin-top:14px}
+.addsec{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border:1px dashed var(--line);border-radius:8px;color:var(--ink-3);font-size:13.5px;font-weight:600}
+.addsec .plus{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:var(--surface-2);font-size:15px;line-height:1}
+.addsec:hover{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.dsec[data-sec="review"]:not(.empty):not(.editing){margin-top:28px;padding:14px 18px 16px;background:var(--surface-2);border-radius:8px}
+
+.notebody{font-family:var(--read);font-size:16.5px;line-height:1.62;max-width:68ch;color:var(--ink)}
+.notebody .md{font-size:inherit;line-height:inherit}
+.notebody .md > * + *{margin-top:10px}
+.dsec[data-sec="goals"] .notebody,.dsec[data-sec="review"] .notebody{font-size:16px}
+.dsec[data-sec="goals"] .notebody .md,.dsec[data-sec="review"] .notebody .md{font-size:inherit}
+.md li::marker{color:var(--ink-3)}
+.md ul,.md ol{gap:3px}
+.md h1,.md h2,.md h3{font-family:var(--display);font-weight:650;letter-spacing:-.01em;color:var(--ink)}
+.md li.task{margin-left:-22px}
+.md li.task label{gap:9px}
+.md li.task input{width:16px;height:16px;flex:0 0 auto;transform:translateY(2px)}
+.md li.task input:checked + span{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.md code{background:var(--surface-2);border:1px solid var(--line-2)}
+.md table{font-family:var(--body);font-size:13.5px}
+.md th{background:var(--surface-2)}
+.md th,.md td{border-color:var(--line)}
+.md blockquote{border-left-color:var(--accent-line)}
+
+.daynote textarea{display:block;width:100%;font-family:var(--read);font-size:16.5px;line-height:1.62;color:var(--ink);padding:12px 14px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;resize:none;overflow:hidden;margin-top:8px}
+.daynote textarea:focus{background:var(--surface);border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+.daynote textarea::placeholder{font-style:italic}
+
+.daytools{position:sticky;bottom:0;z-index:3;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:20px calc(-1 * var(--sheet-pad)) 0;padding:10px var(--sheet-pad);border-top:1px solid var(--line-2);background:var(--surface);font-size:12.5px}
+.daytools .faint.autosave{flex:1 1 180px;text-align:right;line-height:1.3}
+.notestatus{color:var(--warn)}
+.mdhelp{position:relative}
+.mdhelp summary{list-style:none;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid transparent;color:var(--ink-2);font-size:13px;font-weight:600}
+.mdhelp summary::-webkit-details-marker{display:none}
+.mdhelp summary:hover,.mdhelp[open] summary{background:var(--surface-2);border-color:var(--line-2)}
+.mdgrid{position:absolute;bottom:calc(100% + 8px);left:0;z-index:5;display:grid;grid-template-columns:auto auto;gap:6px 16px;align-items:baseline;width:max-content;max-width:min(420px, 80vw);padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);font-size:13px;color:var(--ink-2)}
+.mdgrid code{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface-2);padding:1px 6px;border-radius:4px;white-space:nowrap}
+
+.planupd{margin-top:28px;padding-top:16px;border-top:1px dashed var(--line)}
+.planupd h4{font-size:14px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
+.planupd .log{margin-bottom:10px}
+.sheet .inside{padding:0}
+.sheet .cmts{margin-top:18px;padding-top:16px}
+.sheetnext{display:flex;justify-content:flex-end;margin-top:22px;font-size:13px}
+.sheetnext .link{font-weight:600}
+.dayempty{margin:80px auto;color:var(--ink-3)}
+
+/* ---------- comments and highlights ---------- */
+.cmts h4{font-size:14px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--ink-2)}
+.cmts h4 .faint{font-weight:500}
+.cmt{background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px}
+.cmt p,.cmt .md{font-size:14.5px}
+mark.hl{background:var(--hl-soft);border-bottom:2px solid var(--hl);color:inherit}
+mark.hl:hover{background:var(--hl)}
+.cquote{border-left-color:var(--hl);background:var(--hl-soft);color:var(--ink-2)}
+.cpill{background:var(--accent);color:var(--on-accent)}
+.drawer{background:var(--surface);border-left-color:var(--line)}
+.drawer h2{font-family:var(--display);font-weight:600}
+.drawer .thread{background:var(--bg);border-color:var(--line-2)}
+#selbtn{background:var(--ink);color:var(--surface);border-radius:8px}
+
+/* ---------- plan and artifacts ---------- */
+.sec{border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 1px 0 rgba(28,40,38,.03);margin-bottom:16px}
+.sechead{padding:14px 20px}
+.sechead h2,.maphead h2{font-family:var(--display);font-size:21px;font-weight:600;letter-spacing:-.01em}
+.secbody{padding:0 20px 20px}
+.secbody > .mapscroll{border:0;background:transparent;padding:0}
+.mapscroll{border-color:var(--line);border-radius:10px}
+.actgroup h4,.inside .label,.addform h4,.deep .body h4{font-size:13px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--ink-2)}
+.actcard{border-width:1px;border-radius:8px;background:var(--surface)}
+.actcard:hover{border-color:var(--ink-3)}
+.actcard .ac-name{font-size:14.5px}
+svg .box .t2{font-size:14px}
+svg .box.vis rect{fill:var(--surface-2);stroke:var(--line)}
+svg .box.vis .t2{fill:var(--ink)}
+svg .box.stage rect{fill:var(--surface)}
+svg .box.stage:hover rect,svg .box.vis:hover rect{stroke:var(--ink-3)}
+.panel{border-radius:10px;box-shadow:var(--shadow)}
+.panel h2{font-weight:600;letter-spacing:-.01em}
+.deep{border-width:1px;border-color:var(--line);border-radius:10px;background:var(--surface-2)}
+.verb{letter-spacing:.03em}
+.state,.gate{box-shadow:var(--paper);border-radius:10px}
+
+/* ---------- gate ---------- */
+.gate{margin:12vh auto 40px;max-width:400px;padding:30px 30px 26px;gap:14px}
+.gatebrand{display:flex;align-items:center;gap:12px}
+.gatebrand .mark{width:36px;height:36px;color:var(--accent);flex:0 0 auto}
+.gatebrand h2{font-family:var(--display);font-size:25px;font-weight:700;margin:0}
+.gate .gsub{margin:0;font-size:13.5px;color:var(--ink-3)}
+
+/* ---------- narrower screens ---------- */
+@media (max-width:980px) and (min-width:761px){
+  .routemain.logs{grid-template-columns:216px minmax(0,1fr);gap:18px}
+  .calside{position:sticky}
+  :root{--sheet-pad:28px}
+}
+@media (max-width:760px){
+  :root{--sheet-pad:18px}
+  .plantab{padding:12px 10px 0}
+  .routemain{padding-bottom:40px}
+  .routemain.logs{grid-template-columns:minmax(0,1fr);gap:10px}
+  .calside{position:static}
+  .sheethead{grid-template-columns:1fr}
+  .daynav{grid-row:auto;justify-self:start}
+  .caltoggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-weight:600;color:var(--ink-2)}
+  .calside:not(.open) .calcard,.calside:not(.open) .recent{display:none}
+  .sheet{padding:18px var(--sheet-pad) 22px}
+  .sheetdate{font-size:25px}
+  .daytools .faint.autosave{display:none}
+  .notebody,.daynote textarea{font-size:16px}
+  .mdgrid{left:auto;right:0}
+}
+@media (prefers-reduced-motion: reduce){ .tabs button,.btn{transition:none} }
 </style>
 
 </head>
@@ -849,22 +1124,25 @@ function render(force){
   window.scrollTo(0, keepY);
 }
 let renderedView = null;
+const MARK = `<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 20.2 7.3v9.4L12 21.4 3.8 16.7V7.3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
 function renderTop(){
-  const title = state ? state.title : 'CMK Routebook';
+  const title = state ? String(state.title || '') : 'Routebook';
+  const short = !state ? 'Routebook' : state.short ? state.short : (title.split('·')[0].trim() || 'CMK');
+  const full = state && title.includes('·') ? title.replace(/^[^·]*·\s*/, '') : '';
   const tab = (id, label) => `<button role="tab" aria-selected="${view === id}" data-action="view" data-view="${id}">${label}</button>`;
   const ready = dbState === 'ready';
   const n = ready ? openCommentCount() : 0;
   return `<header class="top">
-    <div class="titleblock"><div class="eyebrow">Research project</div><h1>${esc(title)}</h1></div>
-    ${ready ? `<div class="tabs" role="tablist">${tab('plan','Plan')}${tab('artifacts','Artifacts')}${tab('logs','Logs')}</div>
-    <button class="btn cmtbtn" data-action="toggle-drawer" aria-pressed="${drawerOpen}">Comments${n ? `<span class="cpill">${n}</span>` : ''}</button>
-    <button class="btn primary" data-action="new-log">+ Log entry</button>` : ''}
+    <h1 class="brand" title="${esc(title)}">${MARK}<span class="bname">${esc(short)}</span>${full ? `<span class="bfull">${esc(full)}</span>` : ''}</h1>
+    ${ready ? `<nav class="tabs" role="tablist">${tab('plan','Plan')}${tab('artifacts','Artifacts')}${tab('logs','Logs')}</nav>
+    <div class="topacts"><button class="btn cmtbtn" data-action="toggle-drawer" aria-pressed="${drawerOpen}"><span class="cl">Comments</span>${n ? `<span class="cpill">${n}</span>` : ''}</button>
+    <button class="btn logbtn" data-action="new-log" title="Log a result, decision or note against the plan">+ Log entry</button></div>` : ''}
   </header>`;
 }
 function renderFoot(){
-  if (dbState !== 'ready') return `<footer class="foot"><span>Routebook</span><span class="spacer"></span><span>${esc(SITE.owner + '/' + SITE.repo)}</span></footer>`;
+  if (dbState !== 'ready') return `<footer class="foot"><div class="spacer"></div><span>${esc(SITE.owner + '/' + SITE.repo)}</span></footer>`;
   const cls = saveState.kind === 'saving' ? 'busy' : saveState.kind === 'error' ? 'bad' : '';
-  return `<footer class="foot"><span>Routebook</span><span class="spacer"></span>${typeof uploading === 'number' && uploading ? `<span class="sync busy"><i></i>Uploading ${uploading} image${uploading === 1 ? '' : 's'}…</span>` : ''}<span class="sync ${cls}"><i></i>${esc(saveState.text)}</span>${saveState.kind === 'error' ? `<button class="link" data-action="retry-save">Retry</button>` : ''}<button class="link" data-action="refresh" title="Load the latest saved version">Refresh</button><button class="link" data-action="change-token" title="Replace the GitHub token">Token</button><button class="link" data-action="lock" title="Forget the password on this device">Lock</button></footer>`;
+  return `<footer class="foot">${typeof uploading === 'number' && uploading ? `<span class="sync busy"><i></i>Uploading ${uploading} image${uploading === 1 ? '' : 's'}…</span>` : ''}<span class="sync ${cls}"><i></i>${esc(saveState.text)}</span>${saveState.kind === 'error' ? `<button class="link" data-action="retry-save">Retry</button>` : ''}<div class="spacer"></div><button class="link quiet" data-action="refresh" title="Load the latest saved version">Refresh</button><button class="link quiet" data-action="change-token" title="Replace the GitHub token">GitHub token</button><button class="link quiet" data-action="lock" title="Forget the password on this device">Lock</button></footer>`;
 }
 function renderMain(){
   if (dbState === 'locked' || dbState === 'checking') return gateHtml();
@@ -965,14 +1243,14 @@ function visionDeep(){
 }
 // ----- road map -----
 function roadSvg(){
-  const W = 176, H = 84, gap = 30, y = 14, AW = 44;
+  const W = 160, H = 84, gap = 26, y = 14, AW = 44;
   const n = state.stages.length;
   const total = n * (W + gap) + AW; const vw = Math.max(total + 40, 900); let x = (vw - total)/2;
   const P = [];
   state.stages.forEach((st, i) => {
     if (i) P.push(edge([[x - gap, y + H/2], [x, y + H/2]], state.stages[i-1].id, st.id));
     const c = stageCounts(st);
-    const lines = wrap(shortOf(st, 40), 20, 2);
+    const lines = wrap(shortOf(st, 40), 18, 2);
     const ty = lines.length > 1 ? y + 33 : y + 40;
     let badges = '', bx = x + W - 8; const by = y + H - 9;
     if (c.open){ const t = c.open + ' open'; const tw = 12 + t.length * 6; bx -= tw; badges += `<g class="badge open"><rect x="${bx}" y="${by}" width="${tw}" height="18" rx="9"></rect><text x="${bx + tw/2}" y="${by + 13}" text-anchor="middle">${t}</text></g>`; bx -= 4; }
@@ -1235,7 +1513,7 @@ function logEntryHtml(l){
     <div class="entry-foot">${tools}</div>
   </li>`;
 }
-const cal = { ym: TODAY.slice(0,7), open: null, sel: null, closed: false };
+const cal = { ym: TODAY.slice(0,7), open: null, sel: null, closed: false, showCal: false };
 let noteEditing = false;
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const notesOf = () => (state.notes = state.notes || {});
@@ -1253,25 +1531,49 @@ function monthCells(ym){
 }
 const dayEntries = d => sortedLog().filter(l => l.date === d);
 const shiftDay = (d, k) => { const [y, m, dd] = d.split('-').map(Number); const t = new Date(Date.UTC(y, m - 1, dd + k)); return t.toISOString().slice(0, 10); };
+const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dowOf = d => { const [y, m, dd] = d.split('-').map(Number); return new Date(Date.UTC(y, m - 1, dd)).getUTCDay(); };
+const pagesAll = () => { const notes = notesOf(); return Object.keys(notes).filter(k => noteHas(notes[k])).sort(); };
+const dayShort = d => DOW_SHORT[dowOf(d)] + ', ' + fmt(d);
+function pageSummary(n){
+  if (!n) return '';
+  for (const src of [n.goals, n.text, n.review]){
+    if (!src) continue;
+    for (const raw of String(src).split('\n')){
+      const line = mdPlain(raw.trim()).replace(/^\(?\d+[.)]\s*/, '').trim();
+      if (!line || /^\|?\s*:?-{2,}/.test(line)) continue;
+      if (line.length <= 24 && /:\s*$/.test(line)) continue;
+      return line;
+    }
+  }
+  return '';
+}
+
 function calendarHtml(){
   const cells = monthCells(cal.ym); const notes = notesOf();
   const grid = cells.map(d => {
     if (!d) return `<div class="day blank"></div>`;
     const note = notes[d]; const es = dayEntries(d); const hasNote = noteHas(note);
-    const ex = hasNote ? mdPlain(note.goals || note.text || note.review) : '';
-    const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '');
-    return `<div class="day node${d === TODAY ? ' today' : ''}${hasNote ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" title="${esc(longDate(d))}${ex ? ' — ' + esc(ex) : ''}" aria-label="${esc(longDate(d))}${hasNote ? ', has a note' : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
+    const ex = hasNote ? pageSummary(note) : '';
+    const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (typeof openCommentsFor === 'function' && openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '');
+    return `<div class="day node${d === TODAY ? ' today' : ''}${hasNote ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" title="${esc(longDate(d))}${ex ? ' — ' + esc(ex) : ''}" aria-label="${esc(longDate(d))}${hasNote ? ', has a page' : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
   }).join('');
-  const nNotes = Object.keys(notes).filter(k => noteHas(notes[k])).length;
-  return `<div class="calhead"><button class="btn small" data-action="cal-prev" aria-label="Previous month">←</button><h3>${esc(ymLabel(cal.ym))}</h3><button class="btn small" data-action="cal-next" aria-label="Next month">→</button></div>
-    <div class="cal"><div class="dow">${DOW.map(x => `<span>${x[0]}</span>`).join('')}</div><div class="grid">${grid}</div></div>
-    <div class="calfoot"><button class="btn small ghost" data-action="cal-today">Today</button><span class="faint">${nNotes} ${nNotes === 1 ? 'note' : 'notes'} · ${state.log.length} ${state.log.length === 1 ? 'entry' : 'entries'}</span></div>`;
+  const pages = pagesAll();
+  const recent = pages.slice(-6).reverse();
+  const recentHtml = recent.length ? `<div class="recent"><h4>Recent pages</h4><ul>${recent.map(k => { const n = notes[k]; const ex = pageSummary(n) || 'Untitled'; return `<li><button class="pagelink${cal.open === k ? ' sel' : ''}" data-action="goto-day" data-day="${k}"><span class="pd">${esc(dayShort(k))}</span><span class="px">${esc(ex)}</span></button></li>`; }).join('')}</ul></div>` : '';
+  const openLabel = cal.open ? dayShort(cal.open) : ymLabel(cal.ym);
+  return `<button class="caltoggle" data-action="cal-toggle" aria-expanded="${!!cal.showCal}"><span>${cal.showCal ? 'Hide calendar' : 'Calendar'}</span><span class="faint">${pages.length} ${pages.length === 1 ? 'page' : 'pages'}</span></button>
+    <div class="calcard"><div class="calhead"><button class="navbtn" data-action="cal-prev" aria-label="Previous month">‹</button><h3>${esc(ymLabel(cal.ym))}</h3><button class="navbtn" data-action="cal-next" aria-label="Next month">›</button></div>
+    <div class="cal"><div class="dow">${DOW.map(x => `<span>${x.slice(0, 2)}</span>`).join('')}</div><div class="grid">${grid}</div></div>
+    <div class="calfoot"><span class="faint">${pages.length} ${pages.length === 1 ? 'page' : 'pages'}${state.log.length ? ` · ${state.log.length} plan ${state.log.length === 1 ? 'update' : 'updates'}` : ''}</span><button class="btn small ghost${cal.open === TODAY ? ' on' : ''}" data-action="cal-today"${cal.open === TODAY ? ' aria-current="date"' : ''}>Today</button></div></div>
+    ${recentHtml}`;
 }
-function renderCalendar(){ const h = document.getElementById('calside'); if (h) h.innerHTML = calendarHtml(); }
+function renderCalendar(){ const h = document.getElementById('calside'); if (h){ h.innerHTML = calendarHtml(); h.classList.toggle('open', !!cal.showCal); } }
 function renderLogsView(){
   if (!cal.open && !cal.closed){ cal.open = TODAY; cal.sel = TODAY; cal.ym = TODAY.slice(0, 7); }
   return `<div class="plantab"><div class="routemain logs">
-    <aside class="calside" id="calside">${calendarHtml()}</aside>
+    <aside class="calside${cal.showCal ? ' open' : ''}" id="calside">${calendarHtml()}</aside>
     <div id="panel-logs"></div>
   </div></div>`;
 }
@@ -1279,7 +1581,7 @@ function gotoDay(d){
   noteExit(); logEditFlush();
   cal.open = d; cal.sel = d; cal.closed = false; noteEditing = false;
   if (cal.ym !== d.slice(0, 7)) cal.ym = d.slice(0, 7);
-  renderCalendar(); renderDayPanel();
+  cal.showCal = false; renderCalendar(); renderDayPanel();
   const p = document.getElementById('panelbox-logs'); if (p) p.scrollIntoView({block: 'start', behavior: prefersReduced() ? 'auto' : 'smooth'});
 }
 // a day has three parts: goals, notes, review. Each is Markdown; each can be edited on its own.
@@ -1302,6 +1604,7 @@ function carryGoals(d){
   if (!out){ toast('Everything from ' + fmt(src) + ' was ticked off.'); return; }
   t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + out; t.dispatchEvent(new Event('input', {bubbles: true})); t.focus();
 }
+const MD_HELP = [['- item', 'bullet'], ['1. item', 'numbered'], ['- [ ] goal', 'box to tick'], ['**bold**', 'bold'], ['*italic*', 'italic'], ['`code`', 'code'], ['## Heading', 'heading'], ['> quote', 'quote'], ['| a | b |', 'table (then |---|---|)'], ['\\( x^2 \\)', 'math'], ['Tab / Shift+Tab', 'indent / outdent'], ['Paste or drop', 'an image']];
 function renderDayPanel(){
   const host = document.getElementById('panel-logs'); if (!host) return;
   const d = cal.open; if (!d){ host.innerHTML = `<div class="dayempty"><p>Pick a day on the calendar, or</p><button class="btn" data-action="cal-today">Open today</button></div>`; return; }
@@ -1309,26 +1612,36 @@ function renderDayPanel(){
   const val = k => alive && note[k] ? note[k] : '';
   const editingOf = sc => editSecs.has(sc.k) || (!val(sc.k) && d >= TODAY);
   const anyEditing = DAY_SECS.some(editingOf);
+  const pages = pagesAll(); const idx = pages.indexOf(d);
+  const prev = pages.filter(k => k < d).pop(), next = pages.find(k => k > d);
+  const [yy, mm, dd] = d.split('-').map(Number);
+  const title = sc => sc.k === 'goals' ? (d === TODAY ? 'Goals for today' : 'Goals') : sc.title;
+  const addLabel = {goals: 'Add goals', text: 'Add notes', review: 'Add a review'};
   const secs = DAY_SECS.map(sc => {
     const v = val(sc.k);
     if (editingOf(sc)){
       const carry = sc.k === 'goals' && !v ? carrySource(d) : null;
-      return `<section class="dsec editing" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span>${carry ? `<button class="link" data-action="goals-carry" data-day="${d}" title="Copy the goals that were not ticked off">Carry over from ${esc(fmt(carry))}</button>` : ''}${v ? `<button class="link dim" data-action="note-clear" data-sec="${sc.k}">Clear</button>` : ''}</div><textarea id="${sc.id}" data-day="${d}" data-sec="${sc.k}" data-min="${sc.min}" placeholder="${sc.ph}">${esc(v)}</textarea></section>`;
+      return `<section class="dsec editing" data-sec="${sc.k}"><div class="dsec-head"><span class="label">${title(sc)}</span>${carry ? `<button class="link" data-action="goals-carry" data-day="${d}" title="Copy the goals that were not ticked off">Carry over unfinished goals from ${esc(fmt(carry))}</button>` : ''}${v ? `<button class="link dim" data-action="note-clear" data-sec="${sc.k}">Clear</button>` : ''}</div><textarea id="${sc.id}" data-day="${d}" data-sec="${sc.k}" data-min="${sc.min}" placeholder="${sc.ph}">${esc(v)}</textarea></section>`;
     }
-    if (!v) return `<section class="dsec empty" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span><button class="link" data-action="note-edit" data-sec="${sc.k}">Add</button></div></section>`;
-    return `<section class="dsec" data-sec="${sc.k}"><div class="dsec-head"><span>${sc.title}</span><button class="link" data-action="note-edit" data-sec="${sc.k}">Edit</button></div><div class="notebody">${md(v, sc.src + ':' + d)}</div></section>`;
+    if (!v) return `<section class="dsec empty" data-sec="${sc.k}"><button class="addsec" data-action="note-edit" data-sec="${sc.k}"><span class="plus">+</span>${addLabel[sc.k]}</button></section>`;
+    return `<section class="dsec" data-sec="${sc.k}"><div class="dsec-head"><span class="label">${title(sc)}</span><button class="link" data-action="note-edit" data-sec="${sc.k}">Edit</button></div><div class="notebody">${md(v, sc.src + ':' + d)}</div></section>`;
   }).join('');
+  const help = `<details class="mdhelp"><summary>Formatting</summary><div class="mdgrid">${MD_HELP.map(([a, b]) => `<code>${esc(a)}</code><span>${esc(b)}</span>`).join('')}</div></details>`;
   const tools = anyEditing
-    ? `<div class="tools daytools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editors">Done</button>${noteHas(note) ? `<button class="btn small" data-action="note-cancel" title="Put the day back the way it was when you started editing">Cancel</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="__last">Attach image</button><span class="notestatus" id="notestatus"></span><span class="faint">Markdown: <code>-</code> bullets, <code>1.</code> numbered, <code>- [ ]</code> tasks, <code>|</code> tables, <code>**bold**</code>, <code>\`code\`</code>, <code>#</code> headings, <code>\\( \\)</code> math. Tab indents. Paste or drop images. Autosaves every 2 minutes and whenever you leave the day.</span></div>`
-    : (noteHas(note) ? `<div class="tools"><span class="faint">last saved ${esc(fmt(note.updated))}</span></div>` : '');
-  host.innerHTML = `<section class="panel" id="panelbox-logs"><header><div class="crumbs"><span>Logs</span><span>›</span><span class="cur">${esc(fmt(d, true))}</span></div><h2>${esc(longDate(d))}${d === TODAY ? ' <span class="todaytag">today</span>' : ''}<span class="daynav"><button class="btn small" data-action="day-prev" title="Previous day">←</button><button class="btn small" data-action="day-next" title="Next day">→</button>${d === TODAY ? '' : `<button class="btn small ghost" data-action="cal-today">Today</button>`}</span></h2></header>
+    ? `<div class="tools daytools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editors">Done</button>${noteHas(note) ? `<button class="btn small" data-action="note-cancel" title="Put the day back the way it was when you started editing">Cancel</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="__last">Attach image</button>${help}<span class="notestatus" id="notestatus"></span><span class="faint autosave">Autosaves every 2 min and when you leave the page</span></div>`
+    : '';
+  const plan = `<div class="planupd">${es.length ? `<h4>Plan updates</h4><ul class="log">${es.map(logEntryHtml).join('')}</ul>` : ''}<button class="btn small quiet" data-action="new-log" data-date="${d}">+ Log a result, decision or note for this day</button></div>`;
+  host.innerHTML = `<article class="sheet" id="panelbox-logs" data-day="${d}">
+    <header class="sheethead">
+      <div class="sheetmeta"><span class="pageno">${idx >= 0 ? 'Page ' + (idx + 1) : 'New page'}</span>${prev ? `<button class="link" data-action="goto-day" data-day="${prev}">‹ Continued from ${esc(dayShort(prev))}</button>` : ''}${noteHas(note) && note.updated ? `<span class="edited">edited ${esc(fmt(note.updated))}</span>` : ''}</div>
+      <div class="daynav"><button class="navbtn" data-action="day-prev" title="Previous day" aria-label="Previous day">‹</button>${d === TODAY ? '' : `<button class="btn small ghost" data-action="cal-today">Today</button>`}<button class="navbtn" data-action="day-next" title="Next day" aria-label="Next day">›</button></div>
+      <h2 class="sheetdate">${esc(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dowOf(d)])}, ${esc(MONTHS_LONG[mm - 1])} ${dd}<span class="yr">${yy}</span>${d === TODAY ? '<span class="todaytag">Today</span>' : ''}</h2>
+    </header>
     <div class="daynote">${secs}${tools}</div>
-    <div class="inside"><div class="label"><span>Logged against the plan this day</span><span></span></div>
-      ${es.length ? `<ul class="log" style="margin-top:8px">${es.map(logEntryHtml).join('')}</ul>` : '<p class="faint" style="margin-top:6px">Nothing yet.</p>'}
-      <div class="tools" style="margin-top:10px"><button class="btn small" data-action="new-log" data-date="${d}">+ Log a result, decision or note on this day</button></div>
-    </div>
-    <div class="inside">${commentsBlock('day:' + d)}</div>
-    <div class="foot"><span>${esc(fmt(d, true))}</span><button data-action="close-day">Close</button></div></section>`;
+    ${plan}
+    <div class="inside">${typeof commentsBlock === 'function' ? commentsBlock('day:' + d) : ''}</div>
+    ${next ? `<div class="sheetnext"><button class="link" data-action="goto-day" data-day="${next}">Continued on ${esc(dayShort(next))} ›</button></div>` : ''}
+  </article>`;
   typeset(host);
   if (typeof applyHighlights === 'function') applyHighlights(host);
   applySelection();
@@ -1903,7 +2216,7 @@ async function boot(){
 }
 function gateHtml(){
   const busy = dbState === 'checking';
-  return `<form class="gate" id="gateform" autocomplete="on"><div><div class="eyebrow">Research project</div><h2>CMK Routebook</h2></div><p>Enter the password to open the routebook.</p>
+  return `<form class="gate" id="gateform" autocomplete="on"><div class="gatebrand">${typeof MARK === 'string' ? MARK : ''}<div><h2>CMK Routebook</h2><p class="gsub">Research notebook</p></div></div><p>Enter the password to open the notebook.</p>
     <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" ${busy ? 'disabled' : ''} autofocus></label>
     <label class="check"><input type="checkbox" name="remember" checked> Remember me on this device</label>
     ${lockError ? `<p class="err">${esc(lockError)}</p>` : ''}
@@ -1948,7 +2261,7 @@ function refreshCmts(target){
   document.querySelectorAll('.cmts').forEach(el => { if (el.dataset.target === target) el.outerHTML = commentsBlock(target); });
   renderDrawer(); updateHeaderCount(); applyHighlights(document.getElementById('panel-logs'));
 }
-function updateHeaderCount(){ const b = document.querySelector('.top .cmtbtn'); if (b){ const n = openCommentCount(); b.innerHTML = 'Comments' + (n ? `<span class="cpill">${n}</span>` : ''); } }
+function updateHeaderCount(){ const b = document.querySelector('.top .cmtbtn'); if (b){ const n = openCommentCount(); b.innerHTML = '<span class="cl">Comments</span>' + (n ? `<span class="cpill">${n}</span>` : ''); } }
 function postComment(f){
   const target = f.dataset.target; const text = f.text.value.trim(); if (!text){ f.text.focus(); return; }
   let name = myName();
@@ -2195,6 +2508,8 @@ document.addEventListener('click', e => {
     if (a === 'cal-prev'){ cal.ym = shiftYm(cal.ym, -1); renderCalendar(); return; }
     if (a === 'cal-next'){ cal.ym = shiftYm(cal.ym, 1); renderCalendar(); return; }
     if (a === 'cal-today'){ gotoDay(TODAY); return; }
+    if (a === 'goto-day'){ gotoDay(act.dataset.day); return; }
+    if (a === 'cal-toggle'){ cal.showCal = !cal.showCal; renderCalendar(); return; }
     if (a === 'day-prev'){ if (cal.open) gotoDay(shiftDay(cal.open, -1)); return; }
     if (a === 'day-next'){ if (cal.open) gotoDay(shiftDay(cal.open, 1)); return; }
     if (a === 'toggle-sec'){ sections[act.dataset.sec] = sections[act.dataset.sec] === false; saveSections(); render(); return; }
@@ -2272,7 +2587,7 @@ document.addEventListener('click', e => {
   }
   if (view === 'logs'){
     const en = e.target.closest('.entry[data-id]'); if (en){ selected = (selected === en.dataset.id) ? null : en.dataset.id; applySelection(); return; }
-    const dy = e.target.closest('.day[data-day]'); if (dy){ openDay(dy.dataset.day, true); return; }
+    const dy = e.target.closest('.day[data-day]'); if (dy){ if (dy.dataset.day !== cal.open) gotoDay(dy.dataset.day); else { cal.showCal = false; renderCalendar(); } return; }
     return;
   }
   if (view === 'plan'){
