@@ -810,6 +810,197 @@ svg .box.stage:hover rect,svg .box.vis:hover rect{stroke:var(--ink-3)}
 .verb{letter-spacing:.03em}
 .state,.gate{box-shadow:var(--paper);border-radius:10px}
 
+/* ---------- plan: the stage page ---------- */
+.secnote{margin:2px 0 10px;font-size:13px}
+.secbody > .secnote:last-child{margin:10px 0 0}
+svg .box.stage rect.seg{fill:var(--surface);stroke:var(--ink-3);stroke-width:1}
+svg .box.stage rect.seg.pass{fill:var(--ok);stroke:var(--ok)}
+svg .box.stage rect.seg.fail{fill:var(--bad);stroke:var(--bad)}
+svg .box.stage rect.seg.mixed{fill:var(--warn);stroke:var(--warn)}
+svg .box.stage .s.meter-t{font-size:12px;font-family:var(--read)}
+svg .box .s,svg .box .n{font-variant-numeric:lining-nums}
+svg .box.stage.open rect:not(.seg){stroke:var(--ink);stroke-width:2.5}
+.stage-sheet{max-width:none;margin:0 0 16px;scroll-margin-top:12px}
+.stage-sheet .sheethead{padding-bottom:18px}
+.sttitle{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;margin:4px 0 0;font-family:var(--display);font-size:30px;font-weight:600;line-height:1.18;letter-spacing:-.015em;color:var(--ink)}
+.sttitle .status-sel{font-family:var(--body);font-size:13px;font-weight:600;letter-spacing:0}
+.stage-sheet .addform{max-width:760px}
+.ssec{margin-top:28px;scroll-margin-top:12px}
+.ssec > .dsec-head{margin-bottom:6px}
+.ssec .dsec-head .count{font-size:13px;font-weight:500;color:var(--ink-3)}
+.ssec .dsec-head .link{margin-left:0}
+.ssec > .faint{font-size:13.5px;margin-top:2px}
+.notebody.crit{font-size:17px;line-height:1.55;max-width:72ch}
+.mdf{margin-top:6px;max-width:860px}
+.mdf textarea,.stage-sheet textarea.mdta{display:block;width:100%;font-family:var(--read);font-size:16px;line-height:1.55;color:var(--ink);padding:10px 12px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;resize:none;overflow:hidden}
+.stage-sheet textarea.mdta:focus{background:var(--surface);border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
+.mdf .tools,.terow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-size:12.5px}
+.terow .spacer,.atools .spacer,.stfoot .spacer{flex:1}
+.link.dim{color:var(--ink-3);font-weight:500}
+.link.dim:hover{color:var(--accent)}
+.link:disabled{opacity:.4;cursor:default}
+
+/* success criteria: meter, judging rule, tasks */
+.meter{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-top:14px;font-size:13.5px;color:var(--ink-2)}
+.meter b{font-family:var(--read);font-weight:700;color:var(--ink);font-variant-numeric:lining-nums tabular-nums}
+.meter .bar{display:flex;gap:4px;min-width:0}
+.meter .bar i{flex:0 1 22px;min-width:5px;width:22px;height:8px;border-radius:3px;background:var(--surface);border:1px solid var(--ink-3)}
+.meter .bar i.pass{background:var(--ok);border-color:var(--ok)}
+.meter .bar i.fail{background:var(--bad);border-color:var(--bad)}
+.meter .bar i.mixed{background:var(--warn);border-color:var(--warn)}
+.judged{margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--hl-soft);font-size:13.5px;line-height:1.5;color:var(--ink-2);max-width:860px}
+.judged b{color:var(--ink)}
+.judged .link{font-weight:700}
+.judged.set{background:var(--surface-2);border:1px solid var(--line-2)}
+.judged.set .notebody{font-size:15px;margin-top:4px}
+.judged.set .mdf{margin-top:4px}
+.scorewrap{margin-top:14px;overflow-x:auto}
+.score{width:100%;border-collapse:collapse;font-size:14px}
+.score th,.score td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.score thead th{font-size:12.5px;font-weight:700;color:var(--ink-3);border-bottom:1px solid var(--line);padding-top:4px}
+.score th.num,.score td.num{width:30px;padding-right:0;color:var(--ink-3);font-family:var(--read);font-variant-numeric:lining-nums tabular-nums}
+.score tr.grp th{padding:16px 10px 6px;font-size:13.5px;font-weight:700;color:var(--ink-2);border-bottom:0}
+.score tr.grp th span{font-weight:500;color:var(--ink-3);margin-left:8px}
+.score td.tname{font-family:var(--read);font-size:15.5px;line-height:1.45;color:var(--ink)}
+.score td.tname .tdet{display:none}
+.score td.size{font-family:var(--read);font-variant-numeric:lining-nums tabular-nums;color:var(--ink-2);white-space:nowrap}
+.score td.tst{white-space:nowrap}
+.score tr.task{cursor:pointer}
+.score tr.task:hover td{background:var(--surface-2)}
+.score tr.task:focus-visible{outline:2px solid var(--accent-line);outline-offset:-2px}
+.score tr.task.open td{background:var(--accent-soft);border-bottom-color:transparent}
+.score tr.taskedit td{background:var(--accent-soft);padding-top:0}
+.tresult{margin-top:3px;font-size:14px;color:var(--ink-2)}
+.tresult .md{font-size:14px;line-height:1.45}
+.tresult .md > * + *{margin-top:4px}
+.te{display:grid;gap:10px;padding:4px 0 10px;max-width:760px}
+.te .cmts{margin-top:4px;border-top-color:var(--accent-line)}
+.seg3{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:9px;width:max-content;max-width:100%}
+.seg3 label{position:relative;cursor:pointer}
+.seg3 input{position:absolute;opacity:0;pointer-events:none}
+.seg3 span{display:block;padding:4px 12px;border-radius:7px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.seg3 label:hover span{background:var(--surface-2)}
+.seg3 input:checked + span{background:var(--ink);color:var(--surface)}
+.seg3 label.pass input:checked + span{background:var(--ok);color:var(--surface)}
+.seg3 label.fail input:checked + span{background:var(--bad);color:var(--surface)}
+.seg3 label.mixed input:checked + span{background:var(--warn);color:var(--surface)}
+.seg3 input:focus-visible + span{box-shadow:0 0 0 3px var(--accent-line)}
+.stage-sheet textarea.tres{font-size:15px;background:var(--surface)}
+.tmore summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-3);width:max-content}
+.tmore summary:hover{color:var(--accent)}
+.tmore[open] summary{margin-bottom:8px}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stat{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap}
+.stat::before{content:"";width:9px;height:9px;border-radius:50%;box-sizing:border-box;flex:0 0 auto}
+.stat.todo{color:var(--ink-3)} .stat.todo::before{border:1.5px solid var(--ink-3)}
+.stat.pass{color:var(--ok)} .stat.pass::before{background:var(--ok)}
+.stat.fail{color:var(--bad)} .stat.fail::before{background:var(--bad)}
+.stat.mixed{color:var(--warn)} .stat.mixed::before{background:var(--warn)}
+.tst .cpill{margin-left:8px}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+.legend2 .stat{font-weight:500;font-size:12.5px}
+.legend2 .faint{margin-left:auto}
+.addrow{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:13px}
+#taskform{margin-top:12px}
+
+/* activities */
+.acts{display:grid;gap:8px;margin:4px 0 0;padding:0;list-style:none}
+.act{border:1px solid var(--line);border-radius:10px;background:var(--surface);scroll-margin-top:12px}
+.act:hover{border-color:var(--ink-3)}
+.act.open{border-color:var(--ink-3);box-shadow:var(--shadow)}
+.ahead{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-radius:10px}
+.act.open .ahead{padding-bottom:4px}
+.ahead:focus-visible{outline:2px solid var(--accent-line);outline-offset:-2px}
+.anum{display:inline-grid;place-items:center;min-width:30px;height:24px;padding:0 6px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line-2);font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink-2);flex:0 0 auto}
+.act.st-running .anum{background:var(--run-soft);border-color:transparent;color:var(--run)}
+.act.st-done .anum{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.aname{flex:1;min-width:0;font-family:var(--read);font-size:16.5px;font-weight:600;line-height:1.3;color:var(--ink)}
+.ahead .cpill{margin:0}
+.asub{margin:-4px 14px 11px 56px;font-size:13.5px;line-height:1.45;color:var(--ink-3)}
+.abody{padding:6px 18px 14px 56px}
+.abody > .dsec-head{margin-top:4px}
+.abody .notebody{font-size:15.5px;line-height:1.55;margin-top:6px}
+.abody .addsec{margin-top:6px}
+.asec{margin-top:16px}
+.asec > .faint{font-size:13px;margin-top:4px}
+.asec code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line-2);padding:0 5px;border-radius:4px;color:var(--ink)}
+.aqs{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+.aqs li{display:flex;align-items:baseline;gap:8px;font-size:14.5px}
+.aqs li.done .qlink{color:var(--ink-3)}
+.qdot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--accent);flex:0 0 auto}
+.aqs li.done .qdot{background:var(--ok);border-color:var(--ok)}
+.qlink{font-family:var(--read);font-weight:400;color:var(--ink);text-align:left}
+.qlink:hover{color:var(--accent)}
+.daylinks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.daylink{padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-size:13px;font-weight:600;font-variant-numeric:lining-nums}
+.daylink:hover{background:var(--accent-line)}
+.aresults{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.aresults li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14px}
+.aresults .rdate{font-size:12.5px;font-weight:600;color:var(--ink-3);white-space:nowrap;font-variant-numeric:lining-nums;padding-top:1px}
+.aresults .md{font-size:14px}
+.atools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line-2);font-size:13px}
+.stlabel{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.abody .cmts{margin-top:14px}
+.abody .addform{margin-top:12px}
+a.atag{display:inline-block;padding:0 5px;border-radius:5px;background:var(--accent-soft);color:var(--accent-ink);font-family:var(--mono);font-size:.82em;font-weight:500;text-decoration:none;line-height:1.5;vertical-align:.04em}
+a.atag:hover{background:var(--accent-line)}
+
+/* open questions */
+.qs,.ths{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:14px}
+.q{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start;scroll-margin-top:12px}
+.q.editing{display:block}
+.qmark{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--accent);display:grid;place-items:center;font-size:11px;font-weight:700;margin-top:3px;box-sizing:border-box;background:var(--surface)}
+.qmark:hover{background:var(--accent-soft)}
+.q.answered .qmark{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.q.answered .qt{color:var(--ink-3)}
+.qt{font-family:var(--read);font-size:16px;line-height:1.45;color:var(--ink)}
+.qm{display:flex;align-items:baseline;gap:8px;margin-top:4px;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.qm .md{font-family:var(--read);font-size:14.5px;line-height:1.5;color:var(--ink-2);min-width:0}
+.qm .md > * + *{margin-top:4px}
+.qtag{flex:0 0 auto;padding:0 7px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line-2);font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink-2);line-height:18px}
+.qtag:hover{border-color:var(--accent-line);color:var(--accent)}
+.qtools{display:flex;align-items:center;gap:12px;margin-top:3px;font-size:12.5px;opacity:.75}
+.q:hover .qtools,.q:focus-within .qtools{opacity:1}
+.q .cmts{margin-top:8px}
+.qform,.thform{display:grid;gap:8px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);max-width:760px}
+.ssec > .qform,.ssec > .thform,.asec > .qform{margin:8px 0 10px}
+.qform .row{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.chip.qchip{font-family:var(--body);font-size:12px}
+
+/* loose threads */
+.th{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:10px 14px;border:1px dashed var(--line);border-radius:10px;scroll-margin-top:12px}
+.th.editing{display:block;border-style:solid;background:var(--surface)}
+.tht .md{font-family:var(--read);font-size:15.5px;line-height:1.5;color:var(--ink)}
+.tht .md > * + *{margin-top:4px}
+.thact{display:flex;flex-direction:column;gap:4px;align-items:flex-end;font-size:12.5px;white-space:nowrap}
+.thact .link{font-weight:600;color:var(--ink-3)}
+.thact .link:hover{color:var(--accent)}
+
+.stage-sheet > .inside{margin-top:30px}
+.stfoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px calc(-1 * var(--sheet-pad)) -30px;padding:12px var(--sheet-pad);border-top:1px solid var(--line-2);background:var(--surface-2);border-radius:0 0 8px 8px}
+.importask{margin-top:40px;padding:12px 14px;border-radius:8px;background:var(--hl-soft);font-size:14px;color:var(--ink-2)}
+.importask .tools{display:flex;gap:8px;margin-top:8px}
+.importask b{color:var(--ink)}
+.linkact{font-size:13px;padding:4px 8px;max-width:200px;color:var(--ink-2)}
+
+@media (max-width:760px){
+  .sttitle{font-size:24px}
+  .stage-sheet{margin-bottom:12px}
+  .score th.size,.score td.size{display:none}
+  .score td.tname .tdet{display:block;font-size:12.5px;color:var(--ink-3);font-family:var(--body);font-variant-numeric:lining-nums}
+  .score th,.score td{padding:8px 6px}
+  .score td.tname{font-size:15px}
+  .stat{font-size:12px}
+  .legend2 .faint{margin-left:0;width:100%}
+  .ahead{padding:10px 12px;gap:10px}
+  .asub{margin:-4px 12px 10px 12px}
+  .abody{padding:4px 12px 12px}
+  .th{grid-template-columns:1fr}
+  .thact{flex-direction:row;flex-wrap:wrap;gap:4px 14px;align-items:center}
+  .stfoot{margin-bottom:-22px}
+  .linkact{max-width:150px}
+}
+
 /* ---------- gate ---------- */
 .gate{margin:12vh auto 40px;max-width:400px;padding:30px 30px 26px;gap:14px}
 .gatebrand{display:flex;align-items:center;gap:12px}
@@ -884,7 +1075,7 @@ function daysAgo(n){ const t = new Date(TODAY + 'T00:00:00Z'); t.setUTCDate(t.ge
 const stampNow = () => new Date().toISOString();
 function newLogId(){ return 'L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 function nextId(prefix, arr){ let m = 0; for (const x of arr){ const n = parseInt(String(x.id).slice(prefix.length), 10); if (!isNaN(n) && n > m) m = n; } return prefix + (m + 1); }
-function kindLabel(k){ return {stage:'stage', unknown:'unknown', activity:'activity', ref:'model entry', artifact:'artifact', log:'log entry', vision:'vision'}[k] || k; }
+function kindLabel(k){ return {stage:'stage', question:'question', task:'task', thread:'loose thread', activity:'activity', ref:'model entry', artifact:'artifact', log:'log entry', vision:'vision'}[k] || k; }
 function slug(s){ return String(s).toLowerCase().replace(/\s+/g,'-'); }
 const layerName = l => ({det:'Deterministic', lrn:'Learned', mix:'Both layers', io:'Input / output', data:'First-class object'}[l] || l);
 const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -909,6 +1100,8 @@ function mdInline(s){
     const hold = html => { keep.push(html); return '\u0001' + (keep.length - 1) + '\u0001'; };
     t = t.replace(/!\[([^\]\n]*)\]\((img:[A-Za-z0-9]+|https?:\/\/[^\s)]+)\)/g, (m, alt, src) => hold(src.startsWith('img:') ? `<img class="mdimg" data-img="${src.slice(4)}" alt="${alt}" title="${alt}">` : `<img class="mdimg" src="${src}" alt="${alt}">`));
     t = t.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, (m, a, h) => hold(`<a href="${h}" target="_blank" rel="noopener">${mdEmph(a)}</a>`));
+    // #A12 links to activity A12
+    t = t.replace(/(^|[^\w&\/])#(A\d+)(?![\w])/g, (m, pre, id) => { const a = state && state.activities ? state.activities.find(x => x.id === id) : null; return a ? pre + hold(`<a class="atag" href="#" data-action="goto-act" data-id="${id}" title="${esc(a.name)}">#${id}</a>`) : m; });
     t = mdEmph(t);
     return t.replace(/\u0001(\d+)\u0001/g, (m, i) => keep[i]);
   }).join('');
@@ -1012,7 +1205,7 @@ function boxRefIds(boxId){ return REFS.filter(r => r.box === boxId).map(r => r.i
 function node(id){
   if (!state) return null;
   if (id === 'vision') return {kind:'vision', id:'vision', name:'Vision'};
-  const table = [['stage', state.stages], ['unknown', state.unknowns], ['activity', state.activities], ['artifact', state.artifacts]];
+  const table = [['stage', state.stages], ['question', state.questions], ['activity', state.activities], ['task', state.tasks], ['thread', state.threads], ['artifact', state.artifacts]];
   for (const [kind, arr] of table){ const n = find(arr, id); if (n) return Object.assign({kind}, n); }
   const r = refById(id); if (r) return Object.assign({kind:'ref'}, r);
   const l = find(state.log, id); if (l) return Object.assign({}, l, {kind:'log', logKind:l.kind});
@@ -1021,7 +1214,9 @@ function node(id){
 function nameOf(n){
   switch(n.kind){
     case 'stage': return n.name;
-    case 'unknown': return n.text;
+    case 'question': return mdPlain(n.text);
+    case 'task': return n.name;
+    case 'thread': return mdPlain(n.text);
     case 'activity': return n.name;
     case 'ref': return n.path;
     case 'artifact': return n.name;
@@ -1053,21 +1248,23 @@ function edgesOf(id){
       add('noted in', state.log.filter(l => l.kind === 'note' && l.about === 'vision').map(l => l.id));
       break;
     case 'stage':
-      add('unknowns', state.unknowns.filter(u => u.stage === id).map(u => u.id));
+      add('questions', (state.questions || []).filter(q => q.stage === id).map(q => q.id));
       add('activities', state.activities.filter(a => a.stage === id).map(a => a.id));
-      add('exit artifact', state.artifacts.filter(f => f.producedBy === id).map(f => f.id));
       add('revised by', state.log.filter(l => l.kind === 'decision' && l.revises === id).map(l => l.id));
       add('noted in', state.log.filter(l => l.kind === 'note' && l.about === id).map(l => l.id));
       break;
-    case 'unknown':
+    case 'question':
       add('in stage', [n.stage]);
-      add('targeted by', state.activities.filter(a => a.targets === id).map(a => a.id));
-      add('moved by', state.log.filter(l => l.kind === 'result' && l.effect && l.effect.unknown === id).map(l => l.id));
+      if (n.activity) add('under', [n.activity]);
+      add('answered by', state.log.filter(l => l.effect && l.effect.question === id).map(l => l.id));
+      break;
+    case 'task': case 'thread':
+      add('in stage', [n.stage]);
       break;
     case 'activity':
-      add('targets', [n.targets]);
-      add('uses', n.uses || []);
       add('in stage', [n.stage]);
+      add('questions', (state.questions || []).filter(q => q.activity === id).map(q => q.id));
+      add('uses', n.uses || []);
       add('reported on by', state.log.filter(l => l.kind === 'result' && l.reportsOn === id).map(l => l.id));
       break;
     case 'ref': {
@@ -1082,7 +1279,7 @@ function edgesOf(id){
       break;
     case 'log':
       if (n.reportsOn) add('reports on', [n.reportsOn]);
-      if (n.effect && n.effect.unknown) add(n.effect.outcome === 'reshaped' ? 'reshapes' : n.effect.outcome === 'resolved' ? 'resolves' : 'leaves open', [n.effect.unknown]);
+      if (n.effect && n.effect.question) add(n.effect.outcome === 'answered' ? 'answers' : 'about', [n.effect.question]);
       if (n.revises) add('revises', [n.revises]);
       if (n.about) add('about', [n.about]);
       break;
@@ -1102,13 +1299,15 @@ function chip(id){
   const f = find(state.artifacts, id);
   if (f) return `<span class="chip node${chipCls(id)}" data-id="${esc(id)}">${esc(f.name)}</span>`;
   if (id === 'vision') return `<span class="chip node${chipCls(id)}" data-id="vision">Vision</span>`;
+  const q = find(state.questions, id);
+  if (q) return `<span class="chip qchip node${chipCls(id)}" data-id="${esc(id)}" title="${esc(q.text)}">${esc(shortOf({name: mdPlain(q.text)}, 46))}</span>`;
   const n = node(id);
   return `<span class="chip node${chipCls(id)}" data-id="${esc(id)}" title="${esc(n ? nameOf(n) : '')}">${esc(id)}</span>`;
 }
 const pill = (s) => `<span class="pill ${esc(slug(s))}">${esc(s)}</span>`;
 
 function render(force){
-  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing)){ pendingRender = true; return; }
+  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit)){ pendingRender = true; return; }
   pendingRender = false;
   REFS = buildRefs();
   selNeighbors = selected && state ? neighbors(selected) : new Set();
@@ -1155,7 +1354,7 @@ function renderMain(){
 }
 
 // ----- plan tab: Vision, Road map, Activities — collapsible, click to open -----
-const pst = { vpart:null, stage:null, cat:null, part:null, act:null };
+const pst = { vpart:null, stage:undefined, act:null, q:null };   // stage undefined = not chosen yet: open the active one
 let addForm = null;   // {kind, stage?, id?}
 let removing = null;  // {kind, id}
 let logEditing = null; // id of the log entry being edited
@@ -1175,11 +1374,6 @@ function wrap(text, maxChars, maxLines){
   return lines;
 }
 const tspans = (lines, x, y, dy) => lines.map((l, i) => `<tspan x="${x}" ${i ? `dy="${dy}"` : `y="${y}"`}>${esc(l)}</tspan>`).join('');
-function stageCounts(s){
-  return { open: state.unknowns.filter(u => u.stage === s.id && u.status !== 'resolved').length,
-           running: state.activities.filter(a => a.stage === s.id && a.status === 'running').length,
-           planned: state.activities.filter(a => a.stage === s.id && a.status === 'planned').length };
-}
 // outlines: nested lists stored as [{text, children}], edited as indented text (two spaces per level)
 function outlineHtml(items){
   if (!items || !items.length) return '';
@@ -1242,51 +1436,41 @@ function visionDeep(){
   return `<div class="deep" id="deep-vision"><header><h3>${esc(p.name)}</h3><button class="close" data-action="close-vpart">Close · Esc</button></header>${outlineBlock('vision', p.id, p.items)}${commentsBlock('vision:' + p.id)}</div>`;
 }
 // ----- road map -----
+const TASK_ST = {todo: 'Not yet run', pass: 'Passing', fail: 'Failing', mixed: 'Mixed'};
+const taskSt = t => TASK_ST[t.status] ? t.status : 'todo';
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const nextActId = () => nextId('A', state.activities.concat((state.removedIds || []).filter(x => /^A\d+$/.test(x)).map(x => ({id: x}))));
+const stageTasks = sid => (state.tasks || []).filter(t => t.stage === sid);
+const stageQs = sid => (state.questions || []).filter(q => q.stage === sid);
+function taskTally(sid){ const c = {n: 0, pass: 0, fail: 0, mixed: 0, todo: 0}; for (const t of stageTasks(sid)){ c.n++; c[taskSt(t)]++; } return c; }
 function roadSvg(){
-  const W = 160, H = 84, gap = 26, y = 14, AW = 44;
+  const W = 160, H = 96, gap = 26, y = 14, AW = 44;
   const n = state.stages.length;
   const total = n * (W + gap) + AW; const vw = Math.max(total + 40, 900); let x = (vw - total)/2;
   const P = [];
   state.stages.forEach((st, i) => {
     if (i) P.push(edge([[x - gap, y + H/2], [x, y + H/2]], state.stages[i-1].id, st.id));
-    const c = stageCounts(st);
     const lines = wrap(shortOf(st, 40), 18, 2);
-    const ty = lines.length > 1 ? y + 33 : y + 40;
-    let badges = '', bx = x + W - 8; const by = y + H - 9;
-    if (c.open){ const t = c.open + ' open'; const tw = 12 + t.length * 6; bx -= tw; badges += `<g class="badge open"><rect x="${bx}" y="${by}" width="${tw}" height="18" rx="9"></rect><text x="${bx + tw/2}" y="${by + 13}" text-anchor="middle">${t}</text></g>`; bx -= 4; }
-    if (c.running){ const t = c.running + ' running'; const tw = 12 + t.length * 6; bx -= tw; badges += `<g class="badge acts"><rect x="${bx}" y="${by}" width="${tw}" height="18" rx="9"></rect><text x="${bx + tw/2}" y="${by + 13}" text-anchor="middle">${t}</text></g>`; }
+    const c = taskTally(st.id);
+    let foot;
+    if (c.n){
+      const inner = W - 28, sg = c.n > 1 ? Math.min(3, inner / c.n / 4) : 0, sw = Math.min(16, (inner - (c.n - 1) * sg) / c.n);
+      let sx = x + (W - (c.n * sw + (c.n - 1) * sg)) / 2;
+      foot = stageTasks(st.id).map(t => { const r = `<rect class="seg ${taskSt(t)}" x="${sx.toFixed(1)}" y="${y + H - 33}" width="${sw.toFixed(1)}" height="6" rx="2"></rect>`; sx += sw + sg; return r; }).join('')
+        + `<text class="s meter-t" x="${x + W/2}" y="${y + H - 12}" text-anchor="middle">${c.pass} of ${c.n} ${c.n === 1 ? 'task' : 'tasks'} passing</text>`;
+    } else foot = `<text class="s" x="${x + W/2}" y="${y + H - 16}" text-anchor="middle">${esc(st.status)}</text>`;
     P.push(`<g class="box stage st-${esc(st.status)} node${pst.stage === st.id ? ' open' : ''}" data-id="${esc(st.id)}" tabindex="0" role="button" aria-label="${esc(st.name)}. Click to open.">
       <rect x="${x}" y="${y}" width="${W}" height="${H}" rx="9"></rect>
       <text class="n" x="${x + 9}" y="${y + 14}">${esc(st.id)}</text>
-      <text class="t2" text-anchor="middle">${tspans(lines, x + W/2, ty, 16)}</text>
-      <text class="s" x="${x + W/2}" y="${y + H - 16}" text-anchor="middle">${esc(st.status)}</text>${badges}${cbadgeSvg(st.id, x + W - 12, y + 12)}
+      <text class="t2" text-anchor="middle">${tspans(lines, x + W/2, lines.length > 1 ? y + 32 : y + 41, 16)}</text>${foot}${typeof cbadgeSvg === 'function' ? cbadgeSvg(st.id, x + W - 12, y + 12) : ''}
     </g>`);
     x += W + gap;
   });
   P.push(`<g class="box add" data-action="add-stage-form" tabindex="0" role="button" aria-label="Add a stage"><rect x="${x - gap + 14}" y="${y + H/2 - 22}" width="${AW}" height="44" rx="9"></rect><text class="plus" x="${x - gap + 14 + AW/2}" y="${y + H/2 + 7}" text-anchor="middle">+</text></g>`);
   return `<svg viewBox="0 0 ${vw} ${y + H + 16}" xmlns="http://www.w3.org/2000/svg" aria-label="Road map">${P.join('')}</svg>`;
 }
-const STAGE_CATS = [
-  {id:'goal', name:'Goal'}, {id:'unknowns', name:'Unknowns'}, {id:'activities', name:'Activities'}, {id:'exits', name:'Exit artifacts'},
-];
-function stageCatsSvg(st){
-  const unknowns = state.unknowns.filter(u => u.stage === st.id), acts = state.activities.filter(a => a.stage === st.id), exits = state.artifacts.filter(f => f.producedBy === st.id);
-  const subs = { goal: (st.goal && st.goal.length) ? st.goal.length + (st.goal.length === 1 ? ' item' : ' items') : 'empty',
-                 unknowns: unknowns.length ? `${unknowns.filter(u => u.status !== 'resolved').length} open of ${unknowns.length}` : 'none yet',
-                 activities: acts.length ? `${acts.filter(a => a.status === 'running').length} running of ${acts.length}` : 'none yet',
-                 exits: exits.length ? exits.length + (exits.length === 1 ? ' artifact' : ' artifacts') : 'none' };
-  return boxRowSvg(STAGE_CATS.map(c => ({id: 'cat:' + c.id, title: c.name, sub: subs[c.id], open: pst.cat === c.id, cls: 'vis'})), {w: 190, perRow: 4, label: 'Inside ' + st.id});
-}
-function unknownsSvg(st){
-  const us = state.unknowns.filter(u => u.stage === st.id);
-  return boxRowSvg(us.map(u => ({id: u.id, n: u.id, title: shortOf(u, 44), sub: u.status, open: pst.part === u.id, cls: 'unk st-' + u.status, pill: true, label: u.text, chars: 24})), {w: 176, h: 64, perRow: 5, empty: 'No unknowns yet.', label: 'Unknowns of ' + st.id});
-}
-function exitsSvg(st){
-  const fs = state.artifacts.filter(f => f.producedBy === st.id);
-  return boxRowSvg(fs.map(f => ({id: f.id, title: f.name, sub: f.status, open: pst.part === f.id, cls: 'data', pill: true})), {w: 190, h: 64, perRow: 5, empty: 'No exit artifact assigned.', label: 'Exit artifacts of ' + st.id});
-}
-function actCard(a, inStage){
-  return `<div class="actcard st-${esc(a.status)} node${pst.act === a.id ? ' open' : ''}" data-id="${esc(a.id)}" ${inStage ? 'data-in="stage"' : ''} tabindex="0" role="button"><div class="ac-head"><span class="nid">${esc(a.id)}${cpill(a.id)}</span><span class="faint mono">${esc(a.stage)}</span></div><div class="ac-name" title="${esc(a.name)}">${esc(a.short || a.name)}</div>${a.targets ? `<div class="edgeline"><span class="verb">targets</span>${chip(a.targets)}</div>` : ''}</div>`;
+function actCard(a){
+  return `<div class="actcard st-${esc(a.status)} node${pst.act === a.id ? ' open' : ''}" data-id="${esc(a.id)}" data-in="stage" tabindex="0" role="button"><div class="ac-head"><span class="nid">${esc(a.id)}${typeof cpill === 'function' ? cpill(a.id) : ''}</span><span class="faint mono">${esc(a.stage)}</span></div><div class="ac-name" title="${esc(a.name)}">${esc(a.short || a.name)}</div></div>`;
 }
 const STATUS_ACT = ['planned','running','done','parked'], STATUS_STAGE = ['planned','active','blocked','done'];
 const statusSelect = (kind, id, cur, opts) => `<select class="status-sel" data-kind="${kind}" data-id="${esc(id)}" aria-label="Status">${opts.map(o => `<option value="${o}" ${o === cur ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
@@ -1296,121 +1480,235 @@ function addFormHtml(){
   const val = v => esc(v || '');
   if (addForm.kind === 'stage' || addForm.kind === 'edit-stage'){
     const st = addForm.id ? find(state.stages, addForm.id) : null;
-    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}"><h4>${st ? 'Edit ' + esc(st.id) : 'New stage'}</h4><div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(st && st.name)}" placeholder="e.g. Multi-step prediction"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(st && st.short)}" placeholder="e.g. Multi-step"></label></div>${st ? '' : `<label class="field"><span>Goal (one item per line; indent for sub-items)</span><textarea name="goal" class="outline" rows="3"></textarea></label><label class="field"><span>Place</span><select name="place"><option value="end">at the end</option>${state.stages.length ? `<option value="start">at the start, before ${esc(state.stages[0].id)}</option>` : ''}${state.stages.slice(0, -1).map((x, i) => `<option value="${i}">after ${esc(x.id)} · ${esc(x.name)}</option>`).join('')}</select></label>`}<div class="tools"><button type="submit" class="btn small primary">${st ? 'Save' : 'Add stage'}</button>${cancel}</div></form>`;
-  }
-  if (addForm.kind === 'unknown' || addForm.kind === 'edit-unknown'){
-    const u = addForm.id ? find(state.unknowns, addForm.id) : null; const stage = u ? u.stage : addForm.stage;
-    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}" data-stage="${esc(stage)}"><h4>${u ? 'Edit ' + esc(u.id) : 'New unknown in ' + esc(stage)}</h4><label class="field"><span>The question</span><input type="text" name="text" required value="${val(u && u.text)}" placeholder="What this stage has to find out"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(u && u.short)}" placeholder="e.g. does it scale?"></label><div class="tools"><button type="submit" class="btn small primary">${u ? 'Save' : 'Add unknown'}</button>${cancel}</div></form>`;
+    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}"><h4>${st ? 'Rename ' + esc(st.id) : 'New stage'}</h4><div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(st && st.name)}" placeholder="e.g. Multi-step prediction"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(st && st.short)}" placeholder="e.g. Multi-step"></label></div>${st ? '' : `<label class="field"><span>Goal</span><textarea name="goal" rows="3" placeholder="What this stage has to show."></textarea></label><label class="field"><span>Place</span><select name="place"><option value="end">at the end</option>${state.stages.length ? `<option value="start">at the start, before ${esc(state.stages[0].id)}</option>` : ''}${state.stages.slice(0, -1).map((x, i) => `<option value="${i}">after ${esc(x.id)} · ${esc(x.name)}</option>`).join('')}</select></label>`}<div class="tools"><button type="submit" class="btn small primary">${st ? 'Save' : 'Add stage'}</button>${cancel}</div></form>`;
   }
   if (addForm.kind === 'activity' || addForm.kind === 'edit-activity'){
     const a = addForm.id ? find(state.activities, addForm.id) : null;
     const fixedStage = a ? null : addForm.stage;
-    const stageSel = fixedStage ? '' : `<label class="field"><span>Stage</span><select name="stage">${state.stages.map(s => `<option value="${esc(s.id)}" ${a && a.stage === s.id ? 'selected' : ''}>${esc(s.id)} · ${esc(s.name)}</option>`).join('')}</select></label>`;
-    const us = fixedStage ? state.unknowns.filter(u => u.stage === fixedStage) : state.unknowns;
-    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}" data-stage="${esc(fixedStage || '')}"><h4>${a ? 'Edit ' + esc(a.id) : 'New activity' + (fixedStage ? ' in ' + esc(fixedStage) : '')}</h4>${stageSel}<div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(a && a.name)}" placeholder="What you will actually do"></label><label class="field"><span>Short label for the map</span><input type="text" name="short" value="${val(a && a.short)}" placeholder="e.g. Measure leakage"></label></div><label class="field"><span>Targets</span><select name="targets"><option value="">no unknown yet</option>${us.map(u => `<option value="${esc(u.id)}" ${a && a.targets === u.id ? 'selected' : ''}>${esc(u.id)} · ${esc(shortOf(u, 60))}</option>`).join('')}</select></label><div class="tools"><button type="submit" class="btn small primary">${a ? 'Save' : 'Add activity'}</button>${cancel}</div></form>`;
+    const stageSel = fixedStage ? '' : `<label class="field"><span>Stage</span><select name="stage">${state.stages.map(s => `<option value="${esc(s.id)}" ${(a ? a.stage : pst.stage) === s.id ? 'selected' : ''}>${esc(s.id)} · ${esc(s.name)}</option>`).join('')}</select></label>`;
+    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}" data-stage="${esc(fixedStage || '')}"><h4>${a ? 'Rename ' + esc(a.id) : 'New activity' + (fixedStage ? ' in ' + esc(fixedStage) : '')}</h4>${stageSel}<div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(a && a.name)}" placeholder="What you will actually do"></label><label class="field"><span>Short label for the Activities list</span><input type="text" name="short" value="${val(a && a.short)}" placeholder="optional"></label></div><div class="tools"><button type="submit" class="btn small primary">${a ? 'Save' : 'Add activity'}</button>${cancel}</div></form>`;
   }
   return '';
 }
 function removeControls(kind, id, label){
   if (removing && removing.kind === kind && removing.id === id) return `<span class="inline-confirm">${esc(label)} <button class="btn small" data-action="remove-yes">Yes, remove</button><button class="btn small ghost" data-action="remove-no">Keep</button></span>`;
-  return `<button class="btn small" data-action="edit-form" data-kind="${kind}" data-id="${esc(id)}">Edit</button><button class="btn small danger" data-action="remove-ask" data-kind="${kind}" data-id="${esc(id)}">Remove</button>`;
+  return `<button class="btn small danger" data-action="remove-ask" data-kind="${kind}" data-id="${esc(id)}">Remove</button>`;
 }
-function nodeDeep(id, closeAction, domId){
-  const n = node(id); if (!n) return '';
-  domId = domId || 'deep-node';
-  const close = `<button class="close" data-action="${closeAction}">Close · Esc</button>`;
-  if (n.kind === 'unknown'){
-    const results = state.log.filter(l => l.kind === 'result' && l.effect && l.effect.unknown === id);
-    const by = state.activities.filter(a => a.targets === id);
-    return `<div class="deep" id="${domId}"><header><h3>${esc(n.id)} ${pill(n.status)}</h3>${close}</header>
-      <div class="body"><p class="q">${esc(n.text)}</p>${n.history && n.history.length ? `<p class="faint">Was: ${n.history.map(h => esc(h.text) + ' (until ' + esc(fmt(h.date)) + ')').join('; ')}</p>` : ''}
-      <p><span class="verb">targeted by</span> ${by.length ? by.map(a => chip(a.id)).join(' ') : '<span class="faint">no activity yet</span>'}</p>
-      ${results.length ? `<h4>Evidence so far</h4><ul>${results.map(l => `<li><span class="mono faint">${esc(fmt(l.date))}</span> ${esc(l.text)} <span class="faint">— ${esc(l.effect.outcome === 'open' ? 'left it open' : l.effect.outcome)}</span></li>`).join('')}</ul>` : ''}</div>
-      <div class="tools"><button class="btn small" data-action="new-log" data-kind="decision" data-stage="${esc(n.stage)}">Log a decision on ${esc(n.stage)}</button>${removeControls('unknown', n.id, 'Remove ' + n.id + '? Activities that target it keep going, with no target.')}</div>${addForm && addForm.kind === 'edit-unknown' && addForm.id === n.id ? addFormHtml() : ''}${commentsBlock(n.id)}</div>`;
-  }
-  if (n.kind === 'activity'){
-    const results = state.log.filter(l => l.kind === 'result' && l.reportsOn === id);
-    const u = n.targets ? find(state.unknowns, n.targets) : null;
-    return `<div class="deep" id="${domId}"><header><h3>${esc(n.id)} · ${esc(n.name)}</h3><span class="src">${statusSelect('activity', n.id, n.status, STATUS_ACT)}</span>${close}</header>
-      <div class="body"><p><span class="verb">targets</span> ${u ? `${chip(u.id)} ${esc(u.text)}` : '<span class="faint">no unknown yet</span>'} <span class="faint">· in ${esc(n.stage)}</span></p>
-      <h4>Goal</h4>${outlineBlock('activity', n.id, n.goal, 'the goal')}
-      ${results.length ? `<h4>Results</h4><ul>${results.map(l => `<li><span class="mono faint">${esc(fmt(l.date))}</span> ${esc(l.text)}</li>`).join('')}</ul>` : ''}</div>
-      <div class="tools">${n.status !== 'done' ? `<button class="btn small primary" data-action="new-log" data-kind="result" data-activity="${esc(n.id)}">Log a result on ${esc(n.id)}</button>` : ''}${removeControls('activity', n.id, 'Remove ' + n.id + '? Its logged results stay in the log.')}</div>${addForm && addForm.kind === 'edit-activity' && addForm.id === n.id ? addFormHtml() : ''}${commentsBlock(n.id)}</div>`;
-  }
-  if (n.kind === 'artifact'){
-    return `<div class="deep" id="${domId}"><header><h3>${esc(n.name)} ${pill(n.status)}</h3>${close}</header><div class="body"><p>${n.note ? esc(n.note) : ''}</p><p><button class="btn small" data-action="goto" data-id="${esc(n.id)}">Open in Artifacts</button></p></div>${commentsBlock(n.id)}</div>`;
-  }
-  return '';
+function linkRemove(kind, id, label, question){
+  if (removing && removing.kind === kind && removing.id === id) return `<span class="inline-confirm">${esc(question)} <button class="btn small danger" data-action="remove-yes">Remove</button><button class="btn small ghost" data-action="remove-no">Keep</button></span>`;
+  return `<button type="button" class="link dim" data-action="remove-ask" data-kind="${kind}" data-id="${esc(id)}">${esc(label)}</button>`;
 }
-function stageCatBody(st){
-  const cat = pst.cat; if (!cat) return '';
-  const close = `<button class="close" data-action="close-cat">Close · Esc</button>`;
-  if (cat === 'goal') return `<div class="deep" id="deep-cat"><header><h3>Goal</h3>${close}</header>${outlineBlock('stage', st.id, st.goal, 'the goal')}</div>`;
-  if (cat === 'unknowns') return `<div class="deep" id="deep-cat"><header><h3>Unknowns</h3>${close}</header><div class="mini" id="mini-route">${unknownsSvg(st)}</div>${pst.part ? nodeDeep(pst.part, 'close-part-route') : ''}<div class="tools"><button class="btn small" data-action="add-form" data-kind="unknown" data-stage="${esc(st.id)}">+ Add an unknown</button></div>${addForm && addForm.kind === 'unknown' ? addFormHtml() : ''}</div>`;
-  if (cat === 'activities'){
-    const as = state.activities.filter(a => a.stage === st.id);
-    return `<div class="deep" id="deep-cat"><header><h3>Activities</h3>${close}</header><div class="actgrid">${as.map(a => actCard(a, true)).join('') || '<p class="faint">No activities yet.</p>'}</div><div class="tools"><button class="btn small" data-action="add-form" data-kind="activity" data-stage="${esc(st.id)}">+ Add an activity</button></div>${addForm && addForm.kind === 'activity' && addForm.stage === st.id ? addFormHtml() : ''}</div>`;
-  }
-  if (cat === 'exits') return `<div class="deep" id="deep-cat"><header><h3>Exit artifacts</h3>${close}</header><div class="mini" id="mini-route">${exitsSvg(st)}</div>${pst.part ? nodeDeep(pst.part, 'close-part-route') : ''}<p class="faint" style="margin-top:8px">Artifacts are assigned to a stage in the Artifacts tab.</p></div>`;
-  return '';
+
+// ----- the stage page: goal, success criteria with its tasks, activities, open questions, loose threads -----
+let stEdit = null;          // the one editor open on the stage page: {kind, id, ...}
+let importPending = null;   // {stage, data, name, summary}
+const isEditing = (kind, id, field) => !!(stEdit && stEdit.kind === kind && stEdit.id === id && (field === undefined || stEdit.field === field));
+const cmts = t => typeof commentsBlock === 'function' ? commentsBlock(t) : '';
+const cpillOf = t => typeof cpill === 'function' ? cpill(t) : '';
+function editLink(of, id, field, value){ return value && !isEditing('field', id, field) ? `<button class="link" data-action="field-edit" data-of="${of}" data-id="${esc(id)}" data-field="${field}">Edit</button>` : ''; }
+function mdField(of, id, field, value, o){
+  if (isEditing('field', id, field) && stEdit.of === of) return `<div class="mdf stedit"><textarea id="fieldedit" class="mdta" data-min="${o.min || 96}" placeholder="${esc(o.ph || '')}">${esc(value || '')}</textarea><div class="tools"><button class="btn small primary" data-primary data-action="field-save">Save</button><button class="btn small" data-action="st-cancel">Cancel</button><span class="faint">Markdown works here. Ctrl/⌘+Enter saves.</span></div></div>`;
+  if (!value) return o.empty ? `<button class="addsec" data-action="field-edit" data-of="${of}" data-id="${esc(id)}" data-field="${field}"><span class="plus">+</span>${esc(o.empty)}</button>` : '';
+  return `<div class="notebody ${o.cls || ''}">${md(value, of + '-' + field + ':' + id)}</div>`;
 }
-function stagePanel(){
+function grpLabel(g){ const k = g.indexOf(' · '); return k < 0 ? esc(g) : esc(g.slice(0, k)) + `<span>${esc(g.slice(k + 3))}</span>`; }
+function taskEditor(t, st, col, ncols){
+  const cur = taskSt(t);
+  return `<tr class="taskedit"><td></td><td colspan="${ncols - 1}"><div class="te stedit">
+    <div class="seg3" role="radiogroup" aria-label="Status">${Object.keys(TASK_ST).map(k => `<label class="${k}"><input type="radio" name="tstatus" value="${k}" ${k === cur ? 'checked' : ''}><span>${TASK_ST[k]}</span></label>`).join('')}</div>
+    <textarea id="taskres" class="tres mdta" data-min="76" placeholder="The result in one line, or paste a table.">${esc(t.result || '')}</textarea>
+    <details class="tmore"><summary>Name, group${col ? ' and ' + esc(col) : ''}</summary><div class="row3">
+      <label class="field"><span>Task</span><input type="text" id="tname" value="${esc(t.name)}"></label>
+      <label class="field"><span>Group</span><input type="text" id="tgroup" list="tgroups" value="${esc(t.group || '')}" placeholder="optional"></label>
+      <label class="field"><span>${esc(st.taskCol || 'Extra column')}</span><input type="text" id="tdetail" value="${esc(t.detail || '')}" placeholder="optional"></label>
+      <label class="field"><span>Column name, same for every task</span><input type="text" id="tcol" value="${esc(st.taskCol || '')}" placeholder="e.g. Train / test"></label>
+    </div></details>
+    <div class="terow"><button class="btn small primary" data-primary data-action="task-save" data-id="${esc(t.id)}">Save</button><button class="btn small" data-action="st-cancel">Cancel</button><button class="link dim" data-action="task-move" data-id="${esc(t.id)}" data-dir="-1">Move up</button><button class="link dim" data-action="task-move" data-id="${esc(t.id)}" data-dir="1">Move down</button><span class="spacer"></span>${linkRemove('task', t.id, 'Remove task', 'Remove this task?')}</div>
+    ${cmts(t.id)}
+  </div></td></tr>`;
+}
+function tasksHtml(st){
+  const ts = stageTasks(st.id); const col = st.taskCol || (ts.some(t => t.detail) ? 'Details' : '');
+  const ncols = col ? 4 : 3;
+  const groups = Array.from(new Set(ts.map(t => t.group).filter(Boolean)));
+  const newForm = isEditing('task-new', st.id) ? `<div class="addform stedit" id="taskform"><h4>New task</h4><div class="row3">
+      <label class="field"><span>Task</span><input type="text" id="tname" placeholder="What is being checked"></label>
+      <label class="field"><span>Group</span><input type="text" id="tgroup" list="tgroups" value="${esc(stEdit.group || '')}" placeholder="optional"></label>
+      <label class="field"><span>${esc(st.taskCol || 'Extra column')}</span><input type="text" id="tdetail" placeholder="optional"></label>
+      ${st.taskCol ? '' : `<label class="field"><span>Name of the extra column</span><input type="text" id="tcol" placeholder="optional, e.g. Train / test"></label>`}
+    </div><div class="tools"><button class="btn small primary" data-primary data-action="task-add" data-id="${esc(st.id)}">Add task</button><button class="btn small" data-action="st-cancel">Done</button><span class="faint">Enter adds the task and keeps this form open for the next one.</span></div></div>` : '';
+  let rows = '', prev = null;
+  ts.forEach((t, k) => {
+    if ((t.group || '') !== (prev || '') && (t.group || prev)) rows += `<tr class="grp"><th colspan="${ncols}">${t.group ? grpLabel(t.group) : 'Other'}</th></tr>`;
+    prev = t.group || '';
+    const open = isEditing('task', t.id); const s = taskSt(t);
+    rows += `<tr class="task${open ? ' open' : ''}" id="task-${esc(t.id)}" data-action="task-open" data-id="${esc(t.id)}" tabindex="0" title="${open ? '' : 'Click to set the status or the result'}"><td class="num">${k + 1}</td><td class="tname"><div class="tn">${mdInline(t.name)}</div>${col && t.detail ? `<div class="tdet">${esc(t.detail)}</div>` : ''}${t.result ? `<div class="tresult">${md(t.result, 'task-result:' + t.id)}</div>` : ''}</td>${col ? `<td class="size">${esc(t.detail || '')}</td>` : ''}<td class="tst"><span class="stat ${s}">${TASK_ST[s]}</span>${cpillOf(t.id)}</td></tr>`;
+    if (open) rows += taskEditor(t, st, col, ncols);
+  });
+  const c = taskTally(st.id);
+  const parts = [`<b>${c.pass} of ${c.n}</b> passing`]; if (c.fail) parts.push(c.fail + ' failing'); if (c.mixed) parts.push(c.mixed + ' mixed'); if (c.todo) parts.push(c.todo + ' not yet run');
+  const judgedEditing = isEditing('field', st.id, 'judged');
+  const judged = !ts.length && !st.judged ? '' : judgedEditing ? `<div class="judged set"><div class="dsec-head"><span class="label">How a task is judged</span></div>${mdField('stage', st.id, 'judged', st.judged, {ph: 'What has to be true for a task to count as passing, mixed or failing.', min: 80})}</div>`
+    : st.judged ? `<div class="judged set"><div class="dsec-head"><span class="label">How a task is judged</span>${editLink('stage', st.id, 'judged', st.judged)}</div>${mdField('stage', st.id, 'judged', st.judged, {})}</div>`
+    : `<div class="judged"><b>How a task is judged:</b> not written yet. Write down what has to be true for a task to count as passing, so a status means the same thing every time. <button class="link" data-action="field-edit" data-of="stage" data-id="${esc(st.id)}" data-field="judged">Write it</button></div>`;
+  return `${ts.length ? `<div class="meter" aria-label="${c.pass} of ${c.n} tasks passing"><span class="bar">${ts.map(t => `<i class="${taskSt(t)}"></i>`).join('')}</span><span>${parts.join(' · ')}</span></div>` : ''}
+    ${judged}
+    ${ts.length ? `<div class="scorewrap"><table class="score"><thead><tr><th class="num">#</th><th>Task</th>${col ? `<th class="size">${esc(col)}</th>` : ''}<th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="legend2">${Object.keys(TASK_ST).map(k => `<span class="stat ${k}">${TASK_ST[k]}</span>`).join('')}<span class="faint">Click a task to change it.</span></div>` : ''}
+    <datalist id="tgroups">${groups.map(g => `<option value="${esc(g)}">`).join('')}</datalist>
+    ${newForm || `<div class="addrow"><button class="btn small quiet" data-action="task-new" data-id="${esc(st.id)}">+ Add a task</button>${ts.length ? '' : `<span class="faint">Tasks are the checks in the success criteria. Each gets a status and a result.</span>`}</div>`}`;
+}
+function tagRe(id){ return new RegExp('(^|[^\\w&/])#' + id + '(?![\\w])'); }
+function daysLinking(aid){
+  const re = tagRe(aid); const notes = notesOf();
+  return Object.keys(notes).filter(d => { const n = notes[d]; return n && !n.deleted && [n.goals, n.text, n.review].some(s => s && re.test(s)); }).sort().reverse();
+}
+function planLead(p){
+  const line = String(p || '').split('\n').find(x => x.trim()) || '';
+  if (/^\s*([-*+]|\d+[.)])\s|^\s*#|^\s*\||^\s*>|^```/.test(line)) return '';
+  const t = mdPlain(line).trim(); return t.length > 140 ? t.slice(0, 137).replace(/\s+\S*$/, '') + '…' : t;
+}
+function actItem(a, st){
+  const open = pst.act === a.id;
+  const qs = (state.questions || []).filter(q => q.activity === a.id); const openQs = qs.filter(q => q.status !== 'answered');
+  const days = daysLinking(a.id); const results = state.log.filter(l => l.kind === 'result' && l.reportsOn === a.id);
+  const counts = []; if (openQs.length) counts.push(openQs.length + (openQs.length === 1 ? ' open question' : ' open questions')); if (days.length) counts.push('in ' + days.length + (days.length === 1 ? ' day' : ' days') + ' of the log'); if (results.length) counts.push(results.length + (results.length === 1 ? ' result' : ' results'));
+  const lead = planLead(a.plan);
+  const head = `<div class="ahead" data-action="act-toggle" data-id="${esc(a.id)}" role="button" tabindex="0" aria-expanded="${open}"><span class="anum">${esc(a.id)}</span><span class="aname">${esc(a.name)}</span>${cpillOf(a.id)}${pill(a.status)}</div>`;
+  const sub = (lead ? [esc(lead)] : a.plan ? [] : ['No plan yet']).concat(counts.map(c => `<span class="acount">${esc(c)}</span>`)).join(' · ');
+  if (!open) return `<li class="act st-${esc(a.status)}" id="act-${esc(a.id)}">${head}${sub ? `<div class="asub">${sub}</div>` : ''}</li>`;
+  const i = state.activities.filter(x => x.stage === a.stage).findIndex(x => x.id === a.id), n = state.activities.filter(x => x.stage === a.stage).length;
+  return `<li class="act open st-${esc(a.status)}" id="act-${esc(a.id)}">${head}
+    <div class="abody">
+      <div class="dsec-head"><span class="label">Plan</span>${editLink('activity', a.id, 'plan', a.plan)}</div>
+      ${mdField('activity', a.id, 'plan', a.plan, {empty: 'Write the plan', ph: 'What you will do. A list works well; Markdown works here.', min: 150})}
+      <div class="asec"><div class="dsec-head"><span class="label">Questions</span><button class="link" data-action="q-new" data-id="${esc(st.id)}" data-act="${esc(a.id)}">+ Add</button></div>
+        ${isEditing('q-new', st.id) && stEdit.act === a.id ? qForm(null, st, a.id) : ''}
+        ${qs.length ? `<ul class="aqs">${qs.map(q => `<li class="${q.status === 'answered' ? 'done' : ''}"><span class="qdot"></span><button class="link qlink" data-action="goto-q" data-id="${esc(q.id)}">${esc(mdPlain(q.text))}</button>${q.status === 'answered' ? ' <span class="faint">answered</span>' : ''}</li>`).join('')}</ul>` : `<p class="faint">None yet.</p>`}</div>
+      <div class="asec"><div class="dsec-head"><span class="label">In the log</span></div>
+        ${days.length ? `<div class="daylinks">${days.map(d => `<button class="daylink" data-action="goto-log-day" data-day="${d}">${esc(dayShort(d))}${d.slice(0, 4) !== TODAY.slice(0, 4) ? ', ' + d.slice(0, 4) : ''}</button>`).join('')}</div>` : ''}
+        <p class="faint">${days.length ? 'Days whose page mentions' : 'No days yet. Write'} <code>#${esc(a.id)}</code>${days.length ? '.' : ' in a day’s goals, notes or review to list that day here.'}</p>
+        ${results.length ? `<ul class="aresults">${results.map(l => `<li><span class="rdate">${esc(fmt(l.date))}</span>${md(l.text)}</li>`).join('')}</ul>` : ''}</div>
+      <div class="atools"><label class="stlabel">Status ${statusSelect('activity', a.id, a.status, STATUS_ACT)}</label><button class="btn small" data-action="new-log" data-kind="result" data-activity="${esc(a.id)}">Log a result</button><button class="btn small" data-action="edit-form" data-kind="activity" data-id="${esc(a.id)}">Rename</button><button class="link dim" data-action="act-move" data-id="${esc(a.id)}" data-dir="-1" ${i <= 0 ? 'disabled' : ''}>Move up</button><button class="link dim" data-action="act-move" data-id="${esc(a.id)}" data-dir="1" ${i >= n - 1 ? 'disabled' : ''}>Move down</button><span class="spacer"></span>${linkRemove('activity', a.id, 'Remove', 'Remove ' + a.id + '? Its questions stay with the stage; logged results stay in the log.')}</div>
+      ${addForm && addForm.kind === 'edit-activity' && addForm.id === a.id ? addFormHtml() : ''}
+      ${cmts(a.id)}
+    </div></li>`;
+}
+function actOptions(st, cur){ return `<option value="">the stage as a whole</option>` + state.activities.filter(a => a.stage === st.id).map(a => `<option value="${esc(a.id)}" ${cur === a.id ? 'selected' : ''}>${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join(''); }
+function qForm(q, st, act){
+  return `<div class="qform stedit"><label class="field"><span>Question</span><textarea id="qtext" class="mdta" data-min="44" placeholder="What you need to find out">${esc(q ? q.text : '')}</textarea></label>
+    <label class="field"><span>Notes or answer</span><textarea id="qnote" class="mdta" data-min="60" placeholder="optional">${esc(q ? q.note : '')}</textarea></label>
+    <div class="row"><label class="field"><span>Belongs to</span><select id="qact">${actOptions(st, q ? q.activity : act)}</select></label>${q ? `<label class="field"><span>Status</span><select id="qstatus"><option value="open" ${q.status !== 'answered' ? 'selected' : ''}>open</option><option value="answered" ${q.status === 'answered' ? 'selected' : ''}>answered</option></select></label>` : ''}</div>
+    <div class="terow"><button class="btn small primary" data-primary data-action="${q ? 'q-save' : 'q-add'}" data-id="${esc(q ? q.id : st.id)}">${q ? 'Save' : 'Add question'}</button><button class="btn small" data-action="st-cancel">Cancel</button><span class="spacer"></span>${q ? linkRemove('question', q.id, 'Remove question', 'Remove this question?') : ''}</div></div>`;
+}
+function qItem(q, st){
+  if (isEditing('q-edit', q.id)) return `<li class="q editing" id="q-${esc(q.id)}">${qForm(q, st)}</li>`;
+  const a = q.activity ? find(state.activities, q.activity) : null; const done = q.status === 'answered';
+  const nC = typeof commentsOf === 'function' ? commentsOf(q.id).length : 0; const showC = pst.q === q.id;
+  return `<li class="q${done ? ' answered' : ''}" id="q-${esc(q.id)}"><button class="qmark" data-action="q-toggle" data-id="${esc(q.id)}" title="${done ? 'Answered. Click to reopen.' : 'Open. Click to mark answered.'}" aria-label="${done ? 'Reopen' : 'Mark answered'}">${done ? '✓' : ''}</button>
+    <div class="qbody"><div class="qt">${mdInline(q.text)}</div>
+      ${a || q.note ? `<div class="qm">${a ? `<button class="qtag" data-action="goto-act" data-id="${esc(a.id)}" title="${esc(a.name)}">${esc(a.id)}</button>` : ''}${q.note ? md(q.note, 'question-note:' + q.id) : ''}</div>` : ''}
+      <div class="qtools"><button class="link dim" data-action="q-edit" data-id="${esc(q.id)}">Edit</button><button class="link dim" data-action="q-cmts" data-id="${esc(q.id)}">${showC ? 'Hide comments' : nC ? nC + (nC === 1 ? ' comment' : ' comments') : 'Comment'}</button>${cpillOf(q.id)}</div>
+      ${showC ? cmts(q.id) : ''}</div></li>`;
+}
+function thItem(h){
+  if (isEditing('th-edit', h.id)) return `<li class="th editing stedit" id="th-${esc(h.id)}"><textarea id="thtext" class="mdta" data-min="60">${esc(h.text)}</textarea><div class="terow"><button class="btn small primary" data-primary data-action="th-save" data-id="${esc(h.id)}">Save</button><button class="btn small" data-action="st-cancel">Cancel</button><span class="spacer"></span>${linkRemove('thread', h.id, 'Remove', 'Remove this thread?')}</div></li>`;
+  return `<li class="th" id="th-${esc(h.id)}"><div class="tht">${md(h.text, 'thread-text:' + h.id)}</div><div class="thact"><button class="link" data-action="th-act" data-id="${esc(h.id)}">Make it an activity</button><button class="link" data-action="th-q" data-id="${esc(h.id)}">Make it a question</button><button class="link dim" data-action="th-edit" data-id="${esc(h.id)}">Edit</button></div></li>`;
+}
+function stageSheet(){
   const st = find(state.stages, pst.stage); if (!st) return '';
-  const catName = pst.cat ? STAGE_CATS.find(c => c.id === pst.cat).name : null;
-  const part = pst.part ? node(pst.part) : null;
-  return `<section class="panel" id="panelbox-route"><header><div class="crumbs"><span>Road map</span><span>›</span><span class="cur">${esc(st.id)}</span>${catName ? `<span>›</span><span class="cur">${esc(catName)}</span>` : ''}${part ? `<span>›</span><span class="cur">${esc(part.kind === 'unknown' ? part.id : (part.name || part.id))}</span>` : ''}</div><h2>${esc(st.id)} · ${esc(st.name)} <button class="iconbtn" data-action="edit-form" data-kind="stage" data-id="${esc(st.id)}" title="Edit the title" aria-label="Edit the title">✎</button> <span class="src">${statusSelect('stage', st.id, st.status, STATUS_STAGE)}</span></h2></header>
-    ${addForm && addForm.kind === 'edit-stage' && addForm.id === st.id ? `<div class="inside top">${addFormHtml()}</div>` : ''}
-    <div class="mini" id="svg-cats">${stageCatsSvg(st)}</div>
-    ${stageCatBody(st)}
-    <div class="inside">${commentsBlock(st.id)}</div>
-    <div class="foot"><span class="grp tools-inline">${(i => `<button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Swap with the stage before it">← Earlier</button><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="1" ${i === state.stages.length - 1 ? 'disabled' : ''} title="Swap with the stage after it">Later →</button>`)(state.stages.findIndex(x => x.id === st.id))}${removeControls('stage', st.id, `Remove ${st.id} with its ${state.unknowns.filter(u => u.stage === st.id).length} unknowns and ${state.activities.filter(a => a.stage === st.id).length} activities?`)}</span><span class="grp"><button data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button data-action="close-stage">Close ${esc(st.id)}</button></span></div></section>`;
+  const i = state.stages.findIndex(x => x.id === st.id); const prev = state.stages[i - 1], next = state.stages[i + 1];
+  const as = state.activities.filter(a => a.stage === st.id);
+  const qs = stageQs(st.id); const qOpen = qs.filter(q => q.status !== 'answered'), qDone = qs.filter(q => q.status === 'answered');
+  const ths = (state.threads || []).filter(h => h.stage === st.id);
+  const sec = (id, label, extra, body) => `<section class="ssec" id="st-${id}"><div class="dsec-head"><span class="label">${label}</span>${extra || ''}</div>${body}</section>`;
+  const imp = !(importPending && importPending.stage === st.id) ? '' : importPending.prior
+    ? `<div class="importask"><p><b>“${esc(importPending.name)}” was already imported</b> into ${esc(importPending.prior.stage)} on ${esc(fmt(importPending.prior.date, true))}. Importing it again could rename the wrong activities, so it is not offered.</p><div class="tools"><button class="btn small" data-action="import-no">Close</button></div></div>`
+    : `<div class="importask"><p><b>Import “${esc(importPending.name)}” into ${esc(st.id)}?</b> ${esc(importPending.summary)}</p><div class="tools"><button class="btn small primary" data-action="import-yes">Import</button><button class="btn small" data-action="import-no">Cancel</button></div></div>`;
+  return `<article class="sheet stage-sheet" id="panelbox-route" data-stage="${esc(st.id)}">
+    <header class="sheethead">
+      <div class="sheetmeta"><span class="pageno">Stage ${i + 1} of ${state.stages.length}</span>${prev ? `<button class="link" data-action="goto-stage" data-id="${esc(prev.id)}">‹ ${esc(prev.id)} ${esc(shortOf(prev, 28))}</button>` : ''}${next ? `<button class="link" data-action="goto-stage" data-id="${esc(next.id)}">${esc(next.id)} ${esc(shortOf(next, 28))} ›</button>` : ''}</div>
+      <div class="daynav"><button class="btn small" data-action="edit-form" data-kind="stage" data-id="${esc(st.id)}">Rename</button><button class="navbtn" data-action="close-stage" title="Close this stage" aria-label="Close this stage">×</button></div>
+      <h2 class="sttitle"><span>${esc(st.name)}</span>${statusSelect('stage', st.id, st.status, STATUS_STAGE)}</h2>
+    </header>
+    ${addForm && addForm.kind === 'edit-stage' && addForm.id === st.id ? addFormHtml() : ''}
+    ${sec('goal', 'Goal', editLink('stage', st.id, 'goal', st.goal), mdField('stage', st.id, 'goal', st.goal, {empty: 'Write the goal', ph: 'What this stage has to show.', cls: 'crit'}))}
+    ${sec('criteria', 'Success criteria', editLink('stage', st.id, 'criteria', st.criteria), mdField('stage', st.id, 'criteria', st.criteria, {empty: 'Write the success criteria', ph: 'What has to be true for this stage to be done. If it comes down to a set of checks, add them below as tasks.', cls: 'crit'}) + tasksHtml(st))}
+    ${sec('activities', 'Activities', `${as.length ? `<span class="count">${as.length}</span>` : ''}<button class="link" data-action="add-form" data-kind="activity" data-stage="${esc(st.id)}">+ Add</button>`,
+      `${addForm && addForm.kind === 'activity' && addForm.stage === st.id ? addFormHtml() : ''}${as.length ? `<ol class="acts">${as.map(a => actItem(a, st)).join('')}</ol>` : `<p class="faint">No activities yet.</p>`}`)}
+    ${sec('questions', 'Open questions', `${qs.length ? `<span class="count">${qOpen.length} open${qDone.length ? ' · ' + qDone.length + ' answered' : ''}</span>` : ''}<button class="link" data-action="q-new" data-id="${esc(st.id)}">+ Add</button>`,
+      `${isEditing('q-new', st.id) && !stEdit.act ? qForm(null, st, null) : ''}${qs.length ? `<ul class="qs">${qOpen.concat(qDone).map(q => qItem(q, st)).join('')}</ul>` : `<p class="faint">None yet. A question can belong to the stage or to one of its activities.</p>`}`)}
+    ${sec('threads', 'Loose threads', `${ths.length ? `<span class="count">${ths.length}</span>` : ''}<button class="link" data-action="th-new" data-id="${esc(st.id)}">+ Add</button>`,
+      `${isEditing('th-new', st.id) ? `<div class="thform stedit"><textarea id="thtext" class="mdta" data-min="60" placeholder="An idea you are not acting on yet"></textarea><div class="terow"><button class="btn small primary" data-primary data-action="th-add" data-id="${esc(st.id)}">Add</button><button class="btn small" data-action="st-cancel">Cancel</button></div></div>` : ''}${ths.length ? `<ul class="ths">${ths.map(thItem).join('')}</ul>` : `<p class="faint">Ideas you are not acting on yet. Each can later become an activity or a question.</p>`}`)}
+    <div class="inside">${cmts(st.id)}</div>
+    <footer class="stfoot"><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Swap with the stage before it">← Earlier</button><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="1" ${i === state.stages.length - 1 ? 'disabled' : ''} title="Swap with the stage after it">Later →</button><button class="btn small" data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button class="btn small" data-action="stage-import" data-id="${esc(st.id)}" title="Fill this stage from a prepared .json file">Import from file</button><span class="spacer"></span>${removeControls('stage', st.id, `Remove ${st.id} with its ${as.length} activities, ${stageTasks(st.id).length} tasks and ${qs.length} questions?`)}</footer>
+    ${imp}
+  </article>`;
 }
 function activitiesBody(){
   const groups = [['running','Running'],['planned','Planned'],['done','Done'],['parked','Parked']].map(([k, label]) => {
     const as = state.activities.filter(a => a.status === k); if (!as.length) return '';
-    return `<div class="actgroup"><h4>${label} <span class="faint">${as.length}</span></h4><div class="actgrid">${as.map(a => actCard(a, false)).join('')}</div></div>`;
+    return `<div class="actgroup"><h4>${label} <span class="faint">${as.length}</span></h4><div class="actgrid">${as.map(a => actCard(a)).join('')}</div></div>`;
   }).join('');
-  return `<div class="actgroups">${groups || '<p class="faint">No activities yet.</p>'}</div>${pst.act ? nodeDeep(pst.act, 'close-act', 'deep-act') : ''}<div class="tools" style="margin-top:12px"><button class="btn small" data-action="add-form" data-kind="activity">+ Add an activity</button></div>${addForm && addForm.kind === 'activity' && !addForm.stage ? addFormHtml() : ''}`;
+  return `<p class="faint secnote">Every stage’s activities in one place. Click one to open it on its stage.</p><div class="actgroups">${groups || '<p class="faint">No activities yet.</p>'}</div><div class="tools" style="margin-top:12px"><button class="btn small" data-action="add-form" data-kind="activity">+ Add an activity</button></div>${addForm && addForm.kind === 'activity' && !addForm.stage ? addFormHtml() : ''}`;
 }
 function sectionHtml(id, title, body){
   const open = sections[id] !== false;
   return `<section class="sec${open ? ' open' : ''}" id="sec-${id}"><header class="sechead" data-action="toggle-sec" data-sec="${id}" role="button" tabindex="0" aria-expanded="${open}"><span class="chev">${open ? '▾' : '▸'}</span><h2>${esc(title)}</h2></header>${open ? `<div class="secbody">${body}</div>` : ''}</section>`;
 }
 function renderPlan(){
+  if (pst.stage === undefined){ const a = state.stages.find(s => s.status === 'active'); pst.stage = a ? a.id : null; }
+  if (pst.stage && !find(state.stages, pst.stage)) pst.stage = null;
   const vision = `<div class="mapscroll tight" id="svg-vision">${visionSvg()}</div>${visionDeep()}`;
-  const road = `<div class="mapscroll" id="svg-route">${roadSvg()}</div>${addForm && addForm.kind === 'stage' ? addFormHtml() : ''}${pst.stage ? stagePanel() : ''}`;
+  const road = `<div class="mapscroll" id="svg-route">${roadSvg()}</div>${addForm && addForm.kind === 'stage' ? addFormHtml() : ''}${pst.stage ? '' : `<p class="faint secnote">Click a stage to open its page.</p>`}`;
   return `<div class="plantab"><div class="routemain">
     ${sectionHtml('vision', 'Vision', vision)}
     ${sectionHtml('roadmap', 'Road map', road)}
-    ${sectionHtml('activities', 'Activities', activitiesBody())}
+    ${pst.stage && sections.roadmap !== false ? stageSheet() : ''}
+    ${sectionHtml('activities', 'All activities', activitiesBody())}
   </div></div>`;
 }
-function mountRoute(){ applySelection(); }
+function mountRoute(){ applySelection(); const s = document.getElementById('panelbox-route'); if (s){ typeset(s); s.querySelectorAll('textarea.mdta').forEach(autoGrow); } }
+function scrollToEl(id, block){ setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({block: block || 'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 40); }
 function togglePlan(kind, id){
-  outlineEditing = null; addForm = null; removing = null;
+  outlineEditing = null; addForm = null; removing = null; stEdit = null;
   if (kind === 'vpart'){ pst.vpart = (pst.vpart === id) ? null : id; }
-  else if (kind === 'stage'){ if (pst.stage === id){ pst.stage = null; pst.cat = null; pst.part = null; } else { pst.stage = id; pst.cat = null; pst.part = null; } }
-  else if (kind === 'cat'){ const c = id.replace(/^cat:/, ''); pst.part = null; pst.cat = (pst.cat === c) ? null : c; }
-  else if (kind === 'part'){ pst.part = (pst.part === id) ? null : id; }
-  else if (kind === 'goact'){ sections.activities = true; saveSections(); pst.act = id; }
-  else if (kind === 'act'){ pst.act = (pst.act === id) ? null : id; }
-  selected = pst.part || pst.act || pst.stage || pst.vpart || null;
+  else if (kind === 'stage'){ if (pst.stage !== id){ pst.stage = id; pst.act = null; pst.q = null; } }   // clicking a stage always shows its page; × or Esc closes it
+  else if (kind === 'goact'){ const a = find(state.activities, id); if (a){ sections.roadmap = true; saveSections(); pst.stage = a.stage; pst.act = id; } }
+  selected = pst.act || pst.stage || pst.vpart || null;
   render();
-  const target = kind === 'vpart' ? 'deep-vision' : kind === 'stage' ? 'panelbox-route' : kind === 'cat' ? 'deep-cat' : (kind === 'act' || kind === 'goact') ? 'deep-act' : 'deep-node';
-  const el = document.getElementById(target); if (el) setTimeout(() => el.scrollIntoView({block: kind === 'goact' ? 'start' : 'nearest', behavior: prefersReduced() ? 'auto' : 'smooth'}), 20);
+  if (kind === 'goact') scrollToEl('act-' + id, 'start');
+  else if (kind === 'stage' && pst.stage) scrollToEl('panelbox-route', 'start');
+  else if (kind === 'vpart'){ const el = document.getElementById('deep-vision'); if (el) setTimeout(() => el.scrollIntoView({block: 'nearest', behavior: prefersReduced() ? 'auto' : 'smooth'}), 20); }
 }
 // stage numbers always follow the order on the map; everything that points at a stage is remapped with it
 function renumberStages(){
   const map = {}; state.stages.forEach((st, i) => { map[st.id] = 'S' + (i + 1); });
   if (Object.keys(map).every(k => map[k] === k)) return;
-  const m = id => (id && map[id]) || id;
-  state.stages.forEach(st => { st.id = m(st.id); });
-  state.unknowns.forEach(u => { u.stage = m(u.stage); });
-  state.activities.forEach(a => { a.stage = m(a.stage); });
+  const m = id => (id && map[id]) || id; const now = stampNow();
+  state.stages.forEach(st => { st.id = m(st.id); st.updated = now; });
+  for (const k of ['activities', 'tasks', 'questions', 'threads']) (state[k] || []).forEach(x => { x.stage = m(x.stage); x.updated = now; });
   state.artifacts.forEach(f => { f.producedBy = m(f.producedBy); });
   state.log.forEach(l => { if (l.revises) l.revises = m(l.revises); if (l.about) l.about = m(l.about); });
   if (state.comments){ const nc = {}; for (const t of Object.keys(state.comments)) nc[m(t)] = state.comments[t]; state.comments = nc; }
   pst.stage = m(pst.stage); selected = m(selected);
+}
+// activity numbers: renumbered only on request (after an import), in road map order; every reference follows, including #A tags in the log
+function retag(s, map){ return String(s).replace(/(^|[^\w&/])#(A\d+)(?![\w])/g, (x, pre, id) => pre + '#' + (map[id] || id)); }
+function renumberActivities(before){
+  const order = []; for (const st of state.stages) for (const a of state.activities) if (a.stage === st.id) order.push(a);
+  for (const a of state.activities) if (!order.includes(a)) order.push(a);
+  const map = {}; order.forEach((a, i) => { map[a.id] = 'A' + (i + 1); });
+  if (Object.keys(map).every(k => map[k] === k)) return map;
+  const m = id => (id && map[id]) || id; const now = stampNow();
+  state.activities = order; for (const a of order){ a.id = m(a.id); a.updated = now; }
+  const gone = new Set(state.removedIds || []); for (const id of (before || [])) if (!order.some(a => a.id === id)) gone.add(id); for (const a of order) gone.delete(a.id); state.removedIds = Array.from(gone);
+  for (const q of (state.questions || [])) if (q.activity){ q.activity = m(q.activity); q.updated = now; }
+  for (const l of state.log){ let ch = false; if (l.reportsOn && map[l.reportsOn]){ l.reportsOn = m(l.reportsOn); ch = true; } if (l.about && map[l.about]){ l.about = m(l.about); ch = true; } if (l.text){ const t = retag(l.text, map); if (t !== l.text){ l.text = t; ch = true; } } if (ch) l.updated = now; }
+  const notes = notesOf(); for (const d of Object.keys(notes)){ const n = notes[d]; let ch = false; for (const k of ['goals', 'text', 'review']) if (n[k]){ const t = retag(n[k], map); if (t !== n[k]){ n[k] = t; ch = true; } } if (ch) n.stamp = now; }
+  if (state.comments){ const nc = {}; for (const t of Object.keys(state.comments)) nc[m(t)] = (nc[m(t)] || []).concat(state.comments[t]); state.comments = nc; }
+  pst.act = m(pst.act); selected = m(selected);
+  return map;
 }
 function moveStage(id, dir){
   const i = state.stages.findIndex(st => st.id === id); const j = i + dir;
@@ -1418,56 +1716,190 @@ function moveStage(id, dir){
   const [st] = state.stages.splice(i, 1); state.stages.splice(j, 0, st);
   renumberStages(); pst.stage = st.id; selected = st.id; commit(); toast(st.id + ' moved.');
 }
+// move an item among the items of the same stage, keeping its place in the whole array otherwise
+function moveWithin(arr, id, dir){
+  const x = arr.find(y => y.id === id); if (!x) return false;
+  const peers = arr.filter(y => y.stage === x.stage); const k = peers.indexOf(x); const other = peers[k + dir]; if (!other) return false;
+  const i = arr.indexOf(x), j = arr.indexOf(other); arr[i] = other; arr[j] = x; x.updated = other.updated = stampNow(); return true;
+}
+function tombstone(ids){ const s = new Set(state.removedIds || []); for (const id of ids) s.add(id); state.removedIds = Array.from(s); }
 function removeNode(kind, id){
+  const now = stampNow();
   if (kind === 'stage'){
-    state.unknowns = state.unknowns.filter(u => u.stage !== id);
-    state.activities = state.activities.filter(a => a.stage !== id);
+    const gone = [];
+    for (const k of ['activities', 'tasks', 'questions', 'threads']){ gone.push(...(state[k] || []).filter(x => x.stage === id).map(x => x.id)); state[k] = (state[k] || []).filter(x => x.stage !== id); }
+    tombstone(gone);
     for (const f of state.artifacts) if (f.producedBy === id) f.producedBy = '';
     state.stages = state.stages.filter(s => s.id !== id);
-    if (pst.stage === id){ pst.stage = null; pst.cat = null; pst.part = null; }
+    if (pst.stage === id){ pst.stage = null; pst.act = null; }
     if (state.comments) delete state.comments[id];
     renumberStages();
-  } else if (kind === 'unknown'){
-    for (const a of state.activities) if (a.targets === id) a.targets = null;
-    state.unknowns = state.unknowns.filter(u => u.id !== id);
-    if (pst.part === id) pst.part = null;
   } else if (kind === 'activity'){
-    state.activities = state.activities.filter(a => a.id !== id);
-    if (pst.act === id) pst.act = null; if (pst.part === id) pst.part = null;
+    for (const q of (state.questions || [])) if (q.activity === id){ q.activity = null; q.updated = now; }
+    state.activities = state.activities.filter(a => a.id !== id); tombstone([id]);
+    if (pst.act === id) pst.act = null;
+  } else if (kind === 'task' || kind === 'question' || kind === 'thread'){
+    const k = kind === 'task' ? 'tasks' : kind === 'question' ? 'questions' : 'threads';
+    state[k] = (state[k] || []).filter(x => x.id !== id); tombstone([id]);
+    if (pst.q === id) pst.q = null;
   } else if (kind === 'log'){
     state.logDeleted = state.logDeleted || []; if (!state.logDeleted.includes(id)) state.logDeleted.push(id);
     state.log = state.log.filter(l => l.id !== id);
   }
-  removing = null; selected = null; commit(); toast((kind === 'log' ? 'Entry' : id) + ' removed.');
+  removing = null; selected = null; if (stEdit && stEdit.id === id) stEdit = null; commit();
+  toast(kind === 'log' ? 'Entry removed.' : kind === 'task' ? 'Task removed.' : kind === 'question' ? 'Question removed.' : kind === 'thread' ? 'Thread removed.' : id + ' removed.');
 }
 function submitAddForm(f){
-  const kind = f.dataset.kind;
-  if (kind === 'edit-stage'){ const st = find(state.stages, f.dataset.id); if (!st) return; const name = f.name.value.trim(); if (!name){ f.name.focus(); return; } st.name = name; const sh = f.short.value.trim(); if (sh) st.short = sh; else delete st.short; addForm = null; commit(); return; }
-  if (kind === 'edit-unknown'){ const u = find(state.unknowns, f.dataset.id); if (!u) return; const text = f.text.value.trim(); if (!text){ f.text.focus(); return; } u.text = text; const sh = f.short.value.trim(); if (sh) u.short = sh; else delete u.short; addForm = null; commit(); return; }
-  if (kind === 'edit-activity'){ const a = find(state.activities, f.dataset.id); if (!a) return; const name = f.name.value.trim(); if (!name){ f.name.focus(); return; } a.name = name; const sh = f.short.value.trim(); if (sh) a.short = sh; else delete a.short; if (f.stage) a.stage = f.stage.value; a.targets = f.targets.value || null; addForm = null; commit(); return; }
+  const kind = f.dataset.kind; const now = stampNow();
+  if (kind === 'edit-stage'){ const st = find(state.stages, f.dataset.id); if (!st) return; const name = f.name.value.trim(); if (!name){ f.name.focus(); return; } st.name = name; const sh = f.short.value.trim(); if (sh) st.short = sh; else delete st.short; st.updated = now; addForm = null; commit(); return; }
+  if (kind === 'edit-activity'){ const a = find(state.activities, f.dataset.id); if (!a) return; const name = f.name.value.trim(); if (!name){ f.name.focus(); return; } a.name = name; const sh = f.short.value.trim(); if (sh) a.short = sh; else delete a.short; if (f.stage && f.stage.value !== a.stage){ a.stage = f.stage.value; pst.stage = a.stage; } a.updated = now; addForm = null; commit(); return; }
   if (kind === 'stage'){
     const name = f.name.value.trim(); if (!name){ f.name.focus(); return; }
-    const st = {id: nextId('S', state.stages), name, status: 'planned', goal: parseOutline(f.goal.value)};
+    const st = {id: nextId('S', state.stages), name, status: 'planned', goal: f.goal.value.trim(), criteria: '', judged: '', taskCol: '', updated: now};
     const sh = f.short.value.trim(); if (sh) st.short = sh;
     const place = f.place ? f.place.value : 'end';
     if (place === 'end') state.stages.push(st); else if (place === 'start') state.stages.unshift(st); else state.stages.splice(Number(place) + 1, 0, st);
-    renumberStages(); addForm = null; pst.stage = st.id; pst.cat = null; pst.part = null; selected = st.id; commit(); toast(st.id + ' added.'); return;
-  }
-  if (kind === 'unknown'){
-    const text = f.text.value.trim(); if (!text){ f.text.focus(); return; }
-    const u = {id: nextId('U', state.unknowns), stage: f.dataset.stage, text, status: 'open', history: []};
-    const sh = f.short.value.trim(); if (sh) u.short = sh;
-    state.unknowns.push(u); addForm = null; pst.part = u.id; selected = u.id; commit(); toast(u.id + ' added.'); return;
+    renumberStages(); addForm = null; pst.stage = st.id; pst.act = null; selected = st.id; commit(); toast(st.id + ' added.'); scrollToEl('panelbox-route'); return;
   }
   if (kind === 'activity'){
     const name = f.name.value.trim(); if (!name){ f.name.focus(); return; }
     const stage = f.dataset.stage || (f.stage ? f.stage.value : ''); if (!stage) return;
-    const a = {id: nextId('A', state.activities), stage, targets: f.targets.value || null, name, goal: [], status: 'planned', uses: []};
+    const a = {id: nextActId(), stage, name, status: 'planned', plan: '', uses: [], updated: now};
     const sh = f.short.value.trim(); if (sh) a.short = sh;
-    state.activities.push(a); addForm = null;
-    if (pst.stage === stage && pst.cat === 'activities') pst.part = a.id; else pst.act = a.id;
-    selected = a.id; commit(); toast(a.id + ' added.'); return;
+    state.activities.push(a); addForm = null; sections.roadmap = true; pst.stage = stage; pst.act = a.id;
+    selected = a.id; commit(); toast(a.id + ' added.'); scrollToEl('act-' + a.id, 'center'); return;
   }
+}
+// the one open editor on the stage page saves through here
+function stageTarget(of, id){ return of === 'stage' ? find(state.stages, id) : of === 'activity' ? find(state.activities, id) : of === 'question' ? find(state.questions, id) : of === 'thread' ? find(state.threads, id) : of === 'task' ? find(state.tasks, id) : null; }
+function saveField(){
+  if (!stEdit || stEdit.kind !== 'field') return;
+  const t = $('#fieldedit'); const x = stageTarget(stEdit.of, stEdit.id);
+  if (t && x){ const v = t.value.trim(); if (v !== (x[stEdit.field] || '')){ x[stEdit.field] = v; x.updated = stampNow(); } }
+  stEdit = null; commit();
+}
+function readTaskForm(t, st){
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+  const name = v('tname'), group = v('tgroup'), detail = v('tdetail'), col = v('tcol');
+  if (name !== null && name) t.name = name; if (group !== null) t.group = group; if (detail !== null) t.detail = detail;
+  if (col !== null && st && col !== (st.taskCol || '')){ st.taskCol = col; st.updated = stampNow(); }
+}
+function saveTask(id){
+  const t = find(state.tasks, id); if (!t) return; const st = find(state.stages, t.stage);
+  const r = document.querySelector('.te input[name=tstatus]:checked'); if (r) t.status = r.value;
+  const res = $('#taskres'); if (res) t.result = res.value.trim();
+  readTaskForm(t, st); t.updated = stampNow(); stEdit = null; commit();
+}
+function addTask(sid){
+  const st = find(state.stages, sid); const nm = $('#tname'); if (!st || !nm) return;
+  if (!nm.value.trim()){ nm.focus(); return; }
+  const t = {id: uid('T'), stage: sid, group: '', name: '', detail: '', status: 'todo', result: '', updated: stampNow()};
+  readTaskForm(t, st); state.tasks.push(t);
+  stEdit = {kind: 'task-new', id: sid, group: t.group}; commit(); render(true);
+  const n2 = $('#tname'); if (n2) n2.focus();
+}
+function questionFromForm(q){
+  const tx = $('#qtext'), nt = $('#qnote'), ac = $('#qact'), ss = $('#qstatus');
+  if (!tx || !tx.value.trim()){ if (tx) tx.focus(); return false; }
+  q.text = tx.value.trim(); q.note = nt ? nt.value.trim() : ''; q.activity = ac && ac.value ? ac.value : null; if (ss) q.status = ss.value; q.updated = stampNow(); return true;
+}
+function promoteThread(id, to){
+  const h = find(state.threads, id); if (!h) return;
+  const lines = String(h.text).split('\n'); const first = mdPlain(lines[0]).trim() || 'Untitled'; const rest = lines.slice(1).join('\n').trim();
+  const now = stampNow();
+  if (to === 'activity'){
+    const a = {id: nextActId(), stage: h.stage, name: first.length > 90 ? first.slice(0, 87) + '…' : first, status: 'planned', plan: first.length > 90 ? h.text : rest, uses: [], updated: now};
+    state.activities.push(a); pst.act = a.id; toast('Now ' + a.id + '.');
+    state.threads = state.threads.filter(x => x.id !== id); tombstone([id]); commit(); scrollToEl('act-' + a.id, 'center');
+  } else {
+    const q = {id: uid('Q'), stage: h.stage, activity: null, text: first, note: rest, status: 'open', updated: now};
+    state.questions.push(q); toast('Now an open question.');
+    state.threads = state.threads.filter(x => x.id !== id); tombstone([id]); commit(); scrollToEl('q-' + q.id, 'center');
+  }
+}
+
+// ---------- data shape v2: unknowns become open questions; stage and activity goals become Markdown ----------
+function outlineMd(items, depth){ depth = depth || 0; return (items || []).map(n => '  '.repeat(depth) + '- ' + n.text + (n.children && n.children.length ? '\n' + outlineMd(n.children, depth + 1) : '')).join('\n'); }
+function outlineToText(v){ if (typeof v === 'string') return v; if (!Array.isArray(v) || !v.length) return ''; if (v.length === 1 && !(v[0].children && v[0].children.length)) return v[0].text || ''; return outlineMd(v); }
+function migrateState(s){
+  if (!s || typeof s !== 'object') return false;
+  for (const k of ['tasks', 'questions', 'threads', 'removedIds', 'activities', 'stages', 'artifacts', 'log']) if (!Array.isArray(s[k])) s[k] = [];
+  if ((s.schema || 1) >= 2) return false;
+  for (const st of s.stages){ st.goal = outlineToText(st.goal); for (const k of ['criteria', 'judged', 'taskCol']) if (typeof st[k] !== 'string') st[k] = ''; }
+  const qid = u => 'Q' + String(u).replace(/^U/, '');
+  for (const u of (s.unknowns || [])){
+    const by = s.activities.find(a => a.targets === u.id);
+    const q = {id: qid(u.id), stage: u.stage, activity: by ? by.id : null, text: u.text, note: '', status: u.status === 'resolved' ? 'answered' : 'open'};
+    if (u.history && u.history.length) q.note = 'Earlier wording: ' + u.history.map(h => '“' + h.text + '”').join('; ');
+    if (!s.questions.some(x => x.id === q.id)) s.questions.push(q);
+  }
+  for (const a of s.activities){ if (typeof a.plan !== 'string') a.plan = outlineToText(a.goal); delete a.goal; delete a.targets; }
+  for (const l of s.log) if (l.effect && l.effect.unknown){ l.effect.question = qid(l.effect.unknown); l.effect.outcome = l.effect.outcome === 'resolved' ? 'answered' : 'open'; delete l.effect.unknown; }
+  if (s.comments) for (const k of Object.keys(s.comments)) if (/^U\d+$/.test(k)){ const nk = qid(k); s.comments[nk] = (s.comments[nk] || []).concat(s.comments[k]); delete s.comments[k]; }
+  delete s.unknowns;
+  s.schema = 2;
+  return true;
+}
+// ---------- import a prepared stage (a .json file) ----------
+function importSummary(d){
+  const n = k => (d[k] || []).length; const upd = k => (d[k] || []).filter(x => x.match).length;
+  const parts = [];
+  if (d.stage) parts.push('It sets the stage’s ' + ['name', 'goal', 'criteria', 'judged'].filter(k => typeof d.stage[k] === 'string').map(k => k === 'criteria' ? 'success criteria' : k === 'judged' ? 'judging rule' : k).join(', ') + '.');
+  const adds = [], ups = [];
+  if (n('tasks')) adds.push(n('tasks') + ' tasks');
+  if (n('activities') - upd('activities')) adds.push((n('activities') - upd('activities')) + ' activities');
+  if (n('questions') - upd('questions')) adds.push((n('questions') - upd('questions')) + ' questions');
+  if (n('threads')) adds.push(n('threads') + ' loose threads');
+  if (upd('activities')) ups.push(upd('activities') + ' activities (' + d.activities.filter(x => x.match).map(x => x.match).join(', ') + ')');
+  if (upd('questions')) ups.push(upd('questions') + ' questions');
+  if (adds.length) parts.push('Adds ' + adds.join(', ') + '.');
+  if (ups.length) parts.push('Updates ' + ups.join(' and ') + '.');
+  if (d.renumberActivities) parts.push('Then renumbers activities in road map order (A1, A2, …); links follow.');
+  return parts.join(' ');
+}
+function applyImport(sid, d){
+  const st = find(state.stages, sid); if (!st) return;
+  const now = stampNow(); const before = state.activities.map(a => a.id);
+  if (d.stage){ for (const k of ['name', 'short', 'goal', 'criteria', 'judged', 'taskCol']) if (typeof d.stage[k] === 'string') st[k] = d.stage[k]; if (STATUS_STAGE.includes(d.stage.status)) st.status = d.stage.status; st.updated = now; }
+  const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+  for (const t of (d.tasks || [])){ if (stageTasks(sid).some(x => same(x.name, t.name) && same(x.group, t.group))) continue; state.tasks.push({id: uid('T'), stage: sid, group: t.group || '', name: t.name || 'Task', detail: t.detail || '', status: TASK_ST[t.status] ? t.status : 'todo', result: t.result || '', updated: now}); }
+  const listed = [];
+  for (const a of (d.activities || [])){
+    let x = a.match ? state.activities.find(y => y.id === a.match) : state.activities.find(y => y.stage === sid && same(y.name, a.name));
+    if (!x){ x = {id: nextActId(), stage: sid, name: 'Activity', status: 'planned', plan: '', uses: []}; state.activities.push(x); }
+    const old = String(x.plan || '').trim();
+    for (const k of ['name', 'short', 'plan']) if (typeof a[k] === 'string') x[k] = a[k];
+    if (d.keepOldPlans && a.match && old && typeof a.plan === 'string' && !a.plan.includes(old)) x.plan = a.plan.replace(/\s+$/, '') + '\n\nEarlier goals:\n' + old;
+    if (STATUS_ACT.includes(a.status)) x.status = a.status;
+    x.stage = sid; x.updated = now; listed.push(x);
+  }
+  if (listed.length) state.activities = state.activities.filter(a => a.stage !== sid).concat(listed, state.activities.filter(a => a.stage === sid && !listed.includes(a)));
+  const refAct = r => { if (!r) return null; const m = /^@(\d+)$/.exec(r); return m ? listed[Number(m[1]) - 1] || null : state.activities.find(a => a.id === r) || null; };
+  const pend = [];
+  for (const q of (d.questions || [])){
+    let x = q.match ? state.questions.find(y => y.id === q.match) : stageQs(sid).find(y => same(y.text, q.text));
+    if (!x){ x = {id: uid('Q'), stage: sid, activity: null, text: '', note: '', status: 'open'}; state.questions.push(x); }
+    for (const k of ['text', 'note']) if (typeof q[k] === 'string') x[k] = q[k];
+    if (q.status === 'open' || q.status === 'answered') x.status = q.status;
+    x.stage = sid; x.updated = now;
+    if (q.activity !== undefined) pend.push([x, refAct(q.activity)]);
+  }
+  for (const h of (d.threads || [])) if (!(state.threads || []).some(x => x.stage === sid && same(x.text, h.text))) state.threads.push({id: uid('H'), stage: sid, text: h.text || '', updated: now});
+  state.imports = (state.imports || []).concat([{hash: d.__hash || '', name: d.__name || '', stage: sid, date: TODAY}]);
+  if (d.renumberActivities) renumberActivities(before);
+  for (const [x, a] of pend) x.activity = a ? a.id : null;
+  pst.stage = sid; pst.act = null; importPending = null; commit(); toast('Imported into ' + sid + '.');
+}
+function textHash(t){ let h = 5381; for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return t.length.toString(36) + '.' + h.toString(36); }
+function startImport(sid){
+  let inp = document.getElementById('stageimport');
+  if (!inp){ inp = document.createElement('input'); inp.type = 'file'; inp.id = 'stageimport'; inp.accept = '.json,application/json'; inp.hidden = true; document.body.appendChild(inp);
+    inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; const sid2 = inp.dataset.stage; inp.value = ''; if (!f) return;
+      f.text().then(txt => { let d; try { d = JSON.parse(txt); } catch(e){ toast('That file is not valid JSON.'); return; }
+        if (!d || d.routebookImport !== 1){ toast('That file is not a Routebook import.'); return; }
+        d.__hash = textHash(txt); d.__name = f.name; const prior = (state.imports || []).find(x => x.hash === d.__hash);
+        importPending = {stage: sid2, data: d, name: f.name, summary: importSummary(d), prior}; render(true); scrollToEl('panelbox-route', 'end'); }); }); }
+  inp.dataset.stage = sid; inp.click();
 }
 // selection: light the edges of whatever is open
 function applySelection(){
@@ -1486,10 +1918,7 @@ function logEntryHtml(l){
   let edges = '';
   if (l.kind === 'result'){
     edges += `<span class="verb">reports on</span>${chip(l.reportsOn)}`;
-    if (l.effect && l.effect.unknown){
-      const verb = l.effect.outcome === 'reshaped' ? 'reshapes' : l.effect.outcome === 'resolved' ? 'resolves' : 'leaves open';
-      edges += `<span class="verb">${verb}</span>${chip(l.effect.unknown)}`;
-    }
+    if (l.effect && l.effect.question && find(state.questions, l.effect.question)) edges += `<span class="verb">${l.effect.outcome === 'answered' ? 'answers' : 'about'}</span>${chip(l.effect.question)}`;
     if (stale) edges += `<span class="stale" title="${esc(stale.map(r => r.path + ' changed ' + fmt(refUpdated(r.id))).join('; '))}">model changed since</span>`;
   } else if (l.kind === 'decision'){
     edges += `<span class="verb">revises</span>${chip(l.revises)}`;
@@ -1604,7 +2033,18 @@ function carryGoals(d){
   if (!out){ toast('Everything from ' + fmt(src) + ' was ticked off.'); return; }
   t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + out; t.dispatchEvent(new Event('input', {bubbles: true})); t.focus();
 }
-const MD_HELP = [['- item', 'bullet'], ['1. item', 'numbered'], ['- [ ] goal', 'box to tick'], ['**bold**', 'bold'], ['*italic*', 'italic'], ['`code`', 'code'], ['## Heading', 'heading'], ['> quote', 'quote'], ['| a | b |', 'table (then |---|---|)'], ['\\( x^2 \\)', 'math'], ['Tab / Shift+Tab', 'indent / outdent'], ['Paste or drop', 'an image']];
+const MD_HELP = [['- item', 'bullet'], ['1. item', 'numbered'], ['- [ ] goal', 'box to tick'], ['**bold**', 'bold'], ['*italic*', 'italic'], ['`code`', 'code'], ['## Heading', 'heading'], ['> quote', 'quote'], ['| a | b |', 'table (then |---|---|)'], ['\\( x^2 \\)', 'math'], ['Tab / Shift+Tab', 'indent / outdent'], ['Paste or drop', 'an image'], ['#A3', 'link to activity A3']];
+function linkActSelect(){
+  const groups = state.stages.map(s => { const as = state.activities.filter(a => a.stage === s.id); return as.length ? `<optgroup label="${esc(s.id + ' · ' + shortOf(s, 30))}">${as.map(a => `<option value="${esc(a.id)}">${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join('')}</optgroup>` : ''; }).join('');
+  return groups ? `<select class="linkact" aria-label="Link this day to an activity" title="Adds a tag like #A3 where your cursor is; the day then shows up on that activity"><option value="">Link an activity…</option>${groups}</select>` : '';
+}
+function insertAtCaret(t, text){
+  const st0 = t.selectionStart != null ? t.selectionStart : t.value.length, en0 = t.selectionEnd != null ? t.selectionEnd : st0;
+  const before = t.value.slice(0, st0), after = t.value.slice(en0);
+  const ins = (before && !/\s$/.test(before) ? ' ' : '') + text + (after && !/^\s/.test(after) ? ' ' : '');
+  t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length;
+  t.dispatchEvent(new Event('input', {bubbles: true})); t.focus();
+}
 function renderDayPanel(){
   const host = document.getElementById('panel-logs'); if (!host) return;
   const d = cal.open; if (!d){ host.innerHTML = `<div class="dayempty"><p>Pick a day on the calendar, or</p><button class="btn" data-action="cal-today">Open today</button></div>`; return; }
@@ -1628,7 +2068,7 @@ function renderDayPanel(){
   }).join('');
   const help = `<details class="mdhelp"><summary>Formatting</summary><div class="mdgrid">${MD_HELP.map(([a, b]) => `<code>${esc(a)}</code><span>${esc(b)}</span>`).join('')}</div></details>`;
   const tools = anyEditing
-    ? `<div class="tools daytools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editors">Done</button>${noteHas(note) ? `<button class="btn small" data-action="note-cancel" title="Put the day back the way it was when you started editing">Cancel</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="__last">Attach image</button>${help}<span class="notestatus" id="notestatus"></span><span class="faint autosave">Autosaves every 2 min and when you leave the page</span></div>`
+    ? `<div class="tools daytools"><button class="btn small primary" data-action="note-save-keep" data-day="${d}" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="note-save" data-day="${d}" title="Save and close the editors">Done</button>${noteHas(note) ? `<button class="btn small" data-action="note-cancel" title="Put the day back the way it was when you started editing">Cancel</button>` : ''}<button type="button" class="btn small" data-action="img-pick" data-for="__last">Attach image</button>${linkActSelect()}${help}<span class="notestatus" id="notestatus"></span><span class="faint autosave">Autosaves every 2 min and when you leave the page</span></div>`
     : '';
   const plan = `<div class="planupd">${es.length ? `<h4>Plan updates</h4><ul class="log">${es.map(logEntryHtml).join('')}</ul>` : ''}<button class="btn small quiet" data-action="new-log" data-date="${d}">+ Log a result, decision or note for this day</button></div>`;
   host.innerHTML = `<article class="sheet" id="panelbox-logs" data-day="${d}">
@@ -1689,15 +2129,19 @@ function gotoNode(id){
   selected = id;
   if (n.kind === 'ref'){ openModelAt(id); return; }
   if (n.kind === 'log'){ view = 'logs'; cal.ym = n.date.slice(0,7); cal.open = n.date; cal.sel = n.date; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.querySelector('#panel-logs .entry.sel'); if (el) el.scrollIntoView({block:'center'}); }, 60); return; }
-  view = 'plan';
-  if (n.kind === 'vision'){ sections.vision = true; }
-  else if (n.kind === 'stage'){ sections.roadmap = true; pst.stage = id; pst.cat = null; pst.part = null; }
-  else if (n.kind === 'unknown'){ sections.roadmap = true; pst.stage = n.stage; pst.cat = 'unknowns'; pst.part = id; }
-  else if (n.kind === 'activity'){ sections.activities = true; pst.act = id; }
-  else if (n.kind === 'artifact'){ view = 'artifacts'; ast.open = id; ast.sel = id; }
+  if (view === 'logs'){ noteExit(); logEditFlush(); }
+  view = 'plan'; stEdit = null; addForm = null; removing = null;
+  let target = 'panelbox-route', block = 'start';
+  if (n.kind === 'vision'){ sections.vision = true; target = 'sec-vision'; }
+  else if (n.kind === 'stage'){ sections.roadmap = true; pst.stage = id; pst.act = null; }
+  else if (n.kind === 'activity'){ sections.roadmap = true; pst.stage = n.stage; pst.act = id; target = 'act-' + id; }
+  else if (n.kind === 'question'){ sections.roadmap = true; pst.stage = n.stage; target = 'q-' + id; block = 'center'; }
+  else if (n.kind === 'task'){ sections.roadmap = true; pst.stage = n.stage; target = 'task-' + id; block = 'center'; }
+  else if (n.kind === 'thread'){ sections.roadmap = true; pst.stage = n.stage; target = 'th-' + id; block = 'center'; }
+  else if (n.kind === 'artifact'){ view = 'artifacts'; ast.open = id; ast.sel = id; target = 'panelbox-artifacts'; }
   try { localStorage.setItem('rb.view', view); } catch(e){}
   render();
-  setTimeout(() => { const d = document.getElementById(view === 'plan' ? (n.kind === 'activity' ? 'deep-act' : pst.part ? 'deep-node' : 'panelbox-route') : 'panelbox-artifacts'); if (d) d.scrollIntoView({block:'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 60);
+  setTimeout(() => { const d = document.getElementById(target); if (d){ d.scrollIntoView({block, behavior: prefersReduced() ? 'auto' : 'smooth'}); if (block === 'center' && typeof flash === 'function') flash(d); } }, 60);
 }
 
 // ----- artifacts tab: the things that exist, with the model blueprint as one of them -----
@@ -1968,7 +2412,7 @@ function openModal(presetKind, presetStage, presetActivity, presetDate){
   modalOpen = true; modalDate = presetDate || null;
   const acts = state.activities.filter(a => a.status !== 'done' && a.status !== 'parked');
   const allActs = acts.length ? acts : state.activities;
-  const actOpts = allActs.map(a => `<option value="${esc(a.id)}" ${presetActivity === a.id ? 'selected' : ''}>${esc(a.id)} · ${esc(a.name)}</option>`).join('');
+  const actOpts = allActs.map(a => `<option value="${esc(a.id)}" ${presetActivity === a.id ? 'selected' : ''}>${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join('');
   const stageOpts = `<option value="vision">Vision</option>` + state.stages.map(s => `<option value="${esc(s.id)}" ${presetStage === s.id ? 'selected' : ''}>${esc(s.id)} · ${esc(s.name)}</option>`).join('');
   const aboutOpts = `<option value="">— nothing in particular —</option><option value="vision">Vision</option>` + state.stages.map(s => `<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.name)}</option>`).join('') + REFS.map(r => `<option value="${esc(r.id)}">${esc(r.path)}${r.kind === 'part' ? ' · ' + esc(r.name) : ''}</option>`).join('');
   const kind = presetKind || 'result';
@@ -1987,7 +2431,7 @@ function openModal(presetKind, presetStage, presetActivity, presetDate){
     <div id="f-decision" ${kind === 'decision' ? '' : 'hidden'} style="display:grid;gap:12px">
       <label class="field"><span>Revises</span><select name="stage">${stageOpts}</select></label>
       <label class="field"><span>The decision, and where it came from</span><textarea name="dtext" placeholder="e.g. Advisor meeting: restated the route map; S1 now ends with the H1–H3 verdicts."></textarea></label>
-      <details open><summary>Also change the route map</summary><div class="inner" id="dec-inner"></div></details>
+      <details open><summary>Also change the plan</summary><div class="inner" id="dec-inner"></div></details>
     </div>
     <div id="f-note" ${kind === 'note' ? '' : 'hidden'} style="display:grid;gap:12px">
       <label class="field"><span>Note</span><textarea name="ntext" placeholder="Anything worth remembering that isn't a result or a decision."></textarea></label>
@@ -2000,68 +2444,48 @@ function openModal(presetKind, presetStage, presetActivity, presetDate){
 }
 function fillPropagate(){
   const f = $('#logform'); if (!f) return;
-  const aid = f.activity.value; const a = find(state.activities, aid); const box = $('#propagate');
-  if (!a){ box.innerHTML = '<p class="faint">No activities to report on. Log a decision to add one.</p>'; return; }
-  const u = find(state.unknowns, a.targets);
-  box.innerHTML = `<p>This reports on <b>${esc(a.id)}</b>, which targets <b>${esc(u ? u.id : '?')}</b>: <i>“${esc(u ? u.text : '')}”</i>. What happened to ${esc(u ? u.id : 'it')}?</p>
-    <div class="opts">
-      <label><input type="radio" name="outcome" value="open" checked> Still open — this is partial evidence</label>
-      <label><input type="radio" name="outcome" value="resolved"> Resolved</label>
-      <label><input type="radio" name="outcome" value="reshaped"> Reshaped <span class="arrow">→</span> <input type="text" name="newtext" placeholder="Restate the unknown"></label>
-    </div>
-    <label class="check"><input type="checkbox" name="done" checked> Mark ${esc(a.id)} done</label>`;
+  const a = find(state.activities, f.activity.value); const box = $('#propagate');
+  if (!a){ box.innerHTML = '<p class="faint">No activities to report on yet. Add one on a stage page.</p>'; return; }
+  const qs = (state.questions || []).filter(q => q.activity === a.id && q.status !== 'answered');
+  box.innerHTML = (qs.length ? `<p>Does this answer one of ${esc(a.id)}’s open questions?</p>
+    <div class="opts"><label><input type="radio" name="answers" value="" checked> No</label>${qs.map(q => `<label><input type="radio" name="answers" value="${esc(q.id)}"> Yes: <i>${esc(mdPlain(q.text))}</i></label>`).join('')}</div>` : '')
+    + `<label class="check"><input type="checkbox" name="done"> Mark ${esc(a.id)} done</label>`;
 }
 function fillDecision(){
   const f = $('#logform'); if (!f) return;
   const sid = f.stage.value; const inner = $('#dec-inner');
-  if (sid === 'vision'){ inner.innerHTML = '<p class="faint" style="font-size:13.5px">A decision about the vision is recorded as-is. Rewriting the vision text itself is out of scope for this prototype.</p>'; return; }
+  if (sid === 'vision'){ inner.innerHTML = '<p class="faint" style="font-size:13.5px">A decision about the vision is recorded as-is. Edit the vision itself in the Plan tab.</p>'; return; }
   const s = find(state.stages, sid);
-  const us = state.unknowns.filter(u => u.stage === sid && u.status !== 'resolved');
   inner.innerHTML = `
-    <label class="field"><span>Set ${esc(s.id)} status</span><select name="status"><option value="">keep “${esc(s.status)}”</option>${['planned','active','blocked','done'].filter(x => x !== s.status).map(x => `<option value="${x}">${x}</option>`).join('')}</select></label>
-    <div class="row"><label class="field"><span>Add an unknown to ${esc(s.id)}</span><input type="text" name="newunknown" placeholder="A question this stage now has to answer"></label><label class="field"><span>Short label for the map</span><input type="text" name="newunknown_short" placeholder="e.g. does it scale?"></label></div>
-    <div class="row">
-      <label class="field"><span>Add an activity</span><input type="text" name="newact" placeholder="What you'll actually do"></label>
-      <label class="field"><span>…targeting</span><select name="newact_target"><option value="__new__">the unknown added above</option>${us.map(u => `<option value="${esc(u.id)}">${esc(u.id)} · ${esc(shortOf(u, 44))}</option>`).join('')}</select></label>
-    </div>`;
+    <label class="field"><span>Set ${esc(s.id)} status</span><select name="status"><option value="">keep “${esc(s.status)}”</option>${STATUS_STAGE.filter(x => x !== s.status).map(x => `<option value="${x}">${x}</option>`).join('')}</select></label>
+    <label class="field"><span>Add an open question to ${esc(s.id)}</span><input type="text" name="newq" placeholder="A question this stage now has to answer"></label>
+    <label class="field"><span>Add an activity to ${esc(s.id)}</span><input type="text" name="newact" placeholder="What you'll actually do"></label>`;
 }
 function closeModal(){ modalOpen = false; $('#overlay').innerHTML = ''; if (pendingRender) render(); }
 function submitModal(){
   const f = $('#logform'); const kind = f.kind.value;
   const entry = {id: newLogId(), date: modalDate || TODAY, kind, updated: stampNow()};
+  let answered = null;
   if (kind === 'result'){
     const a = find(state.activities, f.activity.value); const text = f.rtext.value.trim();
     if (!a){ toast('Nothing to report on.'); return; }
     if (!text){ toast('Write what happened first.'); f.rtext.focus(); return; }
     entry.text = text; entry.reportsOn = a.id;
-    const u = find(state.unknowns, a.targets);
-    const outcome = f.outcome ? f.outcome.value : 'open';
-    if (u){
-      entry.effect = {unknown: u.id, outcome};
-      if (outcome === 'reshaped'){
-        const nt = f.newtext.value.trim(); if (!nt){ toast('Restate the unknown to reshape it.'); f.newtext.focus(); return; }
-        entry.effect.from = u.text; entry.effect.to = nt;
-        u.history = u.history || []; u.history.push({date: TODAY, text: u.text}); u.text = nt; u.status = 'reshaped'; delete u.short;
-      } else if (outcome === 'resolved'){
-        u.status = 'resolved';
-      }
-    }
-    if (f.done && f.done.checked) a.status = 'done';
+    const qid = f.answers ? (f.querySelector('input[name=answers]:checked') || {}).value : '';
+    const q = qid ? find(state.questions, qid) : null;
+    if (q){ entry.effect = {question: q.id, outcome: 'answered'}; q.status = 'answered'; q.updated = stampNow(); answered = q; }
+    if (f.done && f.done.checked){ a.status = 'done'; a.updated = stampNow(); }
   } else if (kind === 'decision'){
     const text = f.dtext.value.trim(); if (!text){ toast('Write the decision first.'); f.dtext.focus(); return; }
     entry.text = text; entry.revises = f.stage.value;
     const s = find(state.stages, f.stage.value);
     if (s){
-      if (f.status && f.status.value) s.status = f.status.value;
-      let newU = null;
-      const ut = f.newunknown ? f.newunknown.value.trim() : '';
-      if (ut){ newU = {id: nextId('U', state.unknowns), stage: s.id, text: ut, status: 'open', history: []}; const us = f.newunknown_short ? f.newunknown_short.value.trim() : ''; if (us) newU.short = us; state.unknowns.push(newU); }
+      const now = stampNow();
+      if (f.status && f.status.value){ s.status = f.status.value; s.updated = now; }
+      const qt = f.newq ? f.newq.value.trim() : '';
+      if (qt) state.questions.push({id: uid('Q'), stage: s.id, activity: null, text: qt, note: '', status: 'open', updated: now});
       const at = f.newact ? f.newact.value.trim() : '';
-      if (at){
-        let target = f.newact_target.value; if (target === '__new__') target = newU ? newU.id : null;
-        if (!target){ toast('An activity needs an unknown to target — add one above or pick an existing one.'); f.newunknown.focus(); state.unknowns = state.unknowns.filter(x => x !== newU); return; }
-        state.activities.push({id: nextId('A', state.activities), stage: s.id, targets: target, name: at, goal: [], status: 'planned', uses: []});
-      }
+      if (at) state.activities.push({id: nextActId(), stage: s.id, name: at, status: 'planned', plan: '', uses: [], updated: now});
     }
   } else {
     const text = f.ntext.value.trim(); if (!text){ toast('Write the note first.'); f.ntext.focus(); return; }
@@ -2069,9 +2493,9 @@ function submitModal(){
   }
   state.log.push(entry);
   modalOpen = false; $('#overlay').innerHTML = '';
-  selected = entry.id; view = modalDate ? 'logs' : 'plan'; if (modalDate){ cal.open = modalDate; cal.sel = modalDate; cal.ym = modalDate.slice(0,7); } if (entry.reportsOn){ const a = find(state.activities, entry.reportsOn); if (a){ sections.activities = true; pst.act = a.id; } } else if (entry.revises && entry.revises !== 'vision'){ sections.roadmap = true; pst.stage = entry.revises; pst.cat = null; pst.part = null; }
+  selected = entry.id; view = modalDate ? 'logs' : 'plan'; if (modalDate){ cal.open = modalDate; cal.sel = modalDate; cal.ym = modalDate.slice(0,7); } if (!modalDate){ if (entry.reportsOn){ const a = find(state.activities, entry.reportsOn); if (a){ sections.roadmap = true; pst.stage = a.stage; pst.act = a.id; } } else if (entry.revises && entry.revises !== 'vision'){ sections.roadmap = true; pst.stage = entry.revises; pst.act = null; } }
   commit();
-  toast('Added to the log' + (entry.kind === 'result' && entry.effect && entry.effect.outcome !== 'open' ? ' — ' + entry.effect.unknown + ' updated' : '') + '.');
+  toast('Added to the log' + (answered ? '; the question is marked answered' : '') + '.');
 }
 
 // ---------- persistence: password gate, encrypted files in a GitHub repo ----------
@@ -2111,7 +2535,7 @@ let saving = false, saveQueued = false, dirty = false, saveTimer = null, lastChe
 const saveState = {kind:'ok', text:'Saved'};
 const nowIso = () => new Date().toISOString();
 const timeShort = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-function normalizeState(){ state.comments = state.comments || {}; state.notes = state.notes || {}; state.images = state.images || {}; state.log = state.log || []; state.logDeleted = state.logDeleted || []; if (state.logDeleted.length){ const d = new Set(state.logDeleted); state.log = state.log.filter(l => !d.has(l.id)); } }
+function normalizeState(){ if (typeof migrateState === 'function') migrateState(state); state.comments = state.comments || {}; state.notes = state.notes || {}; state.images = state.images || {}; state.log = state.log || []; state.logDeleted = state.logDeleted || []; if (state.logDeleted.length){ const d = new Set(state.logDeleted); state.log = state.log.filter(l => !d.has(l.id)); } }
 function storeKey(k, remember){ crypto.subtle.exportKey('raw', k).then(raw => { const s = b64enc(new Uint8Array(raw)); try { const st = remember ? localStorage : sessionStorage; st.setItem('rb.key', s); if (token) st.setItem('rb.tok', token); } catch(e){} }); }
 function storeToken(){ try { const st = localStorage.getItem('rb.key') ? localStorage : sessionStorage.getItem('rb.key') ? sessionStorage : null; if (st && token) st.setItem('rb.tok', token); } catch(e){} }
 function storedToken(){ try { return localStorage.getItem('rb.tok') || sessionStorage.getItem('rb.tok') || null; } catch(e){ return null; } }
@@ -2152,8 +2576,22 @@ async function saveToken(t){
 function setSync(kind, text){ saveState.kind = kind; saveState.text = text; const f = document.querySelector('footer.foot'); if (f) f.outerHTML = renderFoot(); }
 async function commit(){ dirty = true; render(); scheduleSave(); }
 function scheduleSave(){ clearTimeout(saveTimer); setSync('saving', 'Saving…'); saveTimer = setTimeout(doSave, 500); }
+// lists of items with ids: union by id, the newer 'updated' wins, removed ids stay removed
+function mergeList(r, l, gone, stages){
+  const byId = new Map(), order = [];
+  for (const x of (l || [])){ byId.set(x.id, x); order.push(x.id); }
+  for (const x of (r || [])){ const p = byId.get(x.id); if (!p){ byId.set(x.id, x); order.push(x.id); } else if (String(x.updated || '') > String(p.updated || '')) byId.set(x.id, x); }
+  return order.filter(id => !gone.has(id)).map(id => byId.get(id)).filter(x => !stages || !x.stage || stages.has(x.stage));
+}
 function mergeStates(remote, local){
   const out = local;
+  if (typeof migrateState === 'function'){ migrateState(remote); migrateState(local); }
+  const gone = new Set((remote.removedIds || []).concat(local.removedIds || [])); local.removedIds = Array.from(gone);
+  const rs = remote.stages || [], ls = local.stages || [];
+  if (rs.length === ls.length && rs.every((x, i) => x.id === ls[i].id)) local.stages = ls.map((x, i) => String(rs[i].updated || '') > String(x.updated || '') ? rs[i] : x);
+  const stageIds = new Set(local.stages.map(x => x.id));
+  for (const k of ['activities', 'tasks', 'questions', 'threads']) local[k] = mergeList(remote[k], local[k], gone, stageIds);
+  const im = new Map(); for (const x of (remote.imports || []).concat(local.imports || [])) im.set(x.hash + '|' + x.stage, x); local.imports = Array.from(im.values());
   const rc = remote.comments || {}, lc = local.comments || {}; const merged = {};
   for (const t of new Set(Object.keys(rc).concat(Object.keys(lc)))){
     const m = new Map(); for (const c of (rc[t] || [])) m.set(c.id, c);
@@ -2190,7 +2628,7 @@ async function doSave(){
   } finally { saving = false; if (saveQueued){ saveQueued = false; doSave(); } }
 }
 function cmtTyping(){ return Array.prototype.some.call(document.querySelectorAll('.cmtform textarea'), t => t.value.trim()); }
-function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || cmtTyping() || isNoteTA(a)); }
+function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit || importPending || cmtTyping() || isNoteTA(a)); }
 async function refreshFromRepo(manual){
   if (dbState !== 'ready' || !token) return;
   if (saving || dirty){ if (manual) toast('There are unsaved changes; save first.'); return; }
@@ -2277,7 +2715,7 @@ function targetLabel(t){
   if (t.startsWith('vision:')){ const p = state.vision.parts.find(x => x.id === t.slice(7)); return 'Vision · ' + (p ? p.name : t.slice(7)); }
   if (t.startsWith('day:')) return 'Log · ' + fmt(t.slice(4), true);
   const r = refById(t); if (r) return 'Model · ' + r.path;
-  const n = node(t); if (n) return n.kind === 'unknown' ? n.id + ' · ' + shortOf(n, 50) : (n.kind === 'activity' || n.kind === 'stage') ? n.id + ' · ' + n.name : nameOf(n);
+  const n = node(t); if (n) return (n.kind === 'activity' || n.kind === 'stage') ? n.id + ' · ' + n.name : (n.kind === 'question' || n.kind === 'task' || n.kind === 'thread') ? n.stage + ' ' + kindLabel(n.kind) + ' · ' + shortOf({name: nameOf(n)}, 60) : nameOf(n);
   return t;
 }
 function gotoTarget(t){
@@ -2466,7 +2904,7 @@ function hydrateImages(root){
 }
 function openLightbox(src, alt){ const lb = document.getElementById('lightbox'); if (!lb) return; const im = lb.querySelector('img'); im.src = src; im.alt = alt || ''; lb.hidden = false; }
 function closeLightbox(){ const lb = document.getElementById('lightbox'); if (lb && !lb.hidden){ lb.hidden = true; lb.querySelector('img').removeAttribute('src'); return true; } return false; }
-const IMG_TA = '#noteedit, #goalsedit, #reviewedit, #logedit-text, .cmtform textarea, #logform textarea';
+const IMG_TA = '#noteedit, #goalsedit, #reviewedit, #logedit-text, .cmtform textarea, #logform textarea, textarea.mdta';
 document.addEventListener('paste', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
 document.addEventListener('dragover', e => { const t = e.target; if (t && t.matches && t.matches(IMG_TA)) e.preventDefault(); });
 document.addEventListener('drop', e => { const t = e.target; if (!(t && t.matches && t.matches(IMG_TA))) return; const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => /^image\//.test(f.type)); if (!files.length) return; e.preventDefault(); attachImages(files, t); });
@@ -2514,7 +2952,6 @@ document.addEventListener('click', e => {
     if (a === 'day-next'){ if (cal.open) gotoDay(shiftDay(cal.open, 1)); return; }
     if (a === 'toggle-sec'){ sections[act.dataset.sec] = sections[act.dataset.sec] === false; saveSections(); render(); return; }
     if (a === 'close-vpart'){ pst.vpart = null; selected = null; outlineEditing = null; render(); return; }
-    if (a === 'close-cat'){ pst.cat = null; pst.part = null; selected = pst.stage; outlineEditing = null; addForm = null; render(); return; }
     if (a === 'add-stage-form'){ addForm = {kind: 'stage'}; render(true); const f = $('#addform input[name=name]'); if (f) f.focus(); return; }
     if (a === 'add-form'){ addForm = {kind: act.dataset.kind, stage: act.dataset.stage || null}; render(true); const f = $('#addform input, #addform select'); if (f) f.focus(); return; }
     if (a === 'form-cancel'){ addForm = null; render(true); return; }
@@ -2548,9 +2985,37 @@ document.addEventListener('click', e => {
       if (t && tgt){ tgt[0][tgt[1]] = parseOutline(t.value); }
       outlineEditing = null; commit(); return;
     }
-    if (a === 'close-stage'){ pst.stage = null; pst.cat = null; pst.part = null; selected = null; outlineEditing = null; addForm = null; render(); return; }
-    if (a === 'close-part-route'){ pst.part = null; selected = pst.stage; outlineEditing = null; render(); return; }
-    if (a === 'close-act'){ pst.act = null; selected = null; outlineEditing = null; addForm = null; render(); return; }
+    if (a === 'close-stage'){ pst.stage = null; pst.act = null; pst.q = null; stEdit = null; selected = null; addForm = null; removing = null; render(true); return; }
+    // ----- stage page -----
+    if (a === 'goto-stage'){ togglePlan('stage', act.dataset.id); return; }
+    if (a === 'field-edit'){ stEdit = {kind: 'field', of: act.dataset.of, id: act.dataset.id, field: act.dataset.field}; addForm = null; removing = null; render(true); const t = $('#fieldedit'); if (t){ autoGrow(t); t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
+    if (a === 'field-save'){ saveField(); return; }
+    if (a === 'st-cancel'){ stEdit = null; removing = null; render(true); return; }
+    if (a === 'task-open'){ if (e.target.closest('a, input, label, .tresult img')) return; const id = act.dataset.id; if (isEditing('task', id)){ stEdit = null; render(true); return; } stEdit = {kind: 'task', id}; removing = null; render(true); const t = $('#taskres'); if (t){ autoGrow(t); t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
+    if (a === 'task-save'){ saveTask(act.dataset.id); return; }
+    if (a === 'task-new'){ stEdit = {kind: 'task-new', id: act.dataset.id}; removing = null; render(true); const t = $('#tname'); if (t) t.focus(); return; }
+    if (a === 'task-add'){ addTask(act.dataset.id); return; }
+    if (a === 'task-move'){ if (moveWithin(state.tasks, act.dataset.id, Number(act.dataset.dir))){ commit(); render(true); } return; }
+    if (a === 'act-toggle'){ const id = act.dataset.id; pst.act = pst.act === id ? null : id; stEdit = null; addForm = null; removing = null; selected = pst.act || pst.stage; render(true); return; }
+    if (a === 'act-move'){ if (moveWithin(state.activities, act.dataset.id, Number(act.dataset.dir))) commit(); return; }
+    if (a === 'goto-act'){ e.preventDefault(); const x = find(state.activities, act.dataset.id); if (!x) return; if (view === 'plan' && pst.stage === x.stage){ pst.act = x.id; stEdit = null; render(true); scrollToEl('act-' + x.id, 'start'); } else gotoNode(x.id); return; }
+    if (a === 'goto-q'){ const q = find(state.questions, act.dataset.id); if (q){ const el = document.getElementById('q-' + q.id); if (el && typeof flash === 'function') flash(el); else gotoNode(q.id); } return; }
+    if (a === 'goto-log-day'){ const d = act.dataset.day; setView('logs'); gotoDay(d); return; }
+    if (a === 'q-new'){ stEdit = {kind: 'q-new', id: act.dataset.id, act: act.dataset.act || null}; removing = null; render(true); const t = $('#qtext'); if (t) t.focus(); return; }
+    if (a === 'q-add'){ const q = {id: uid('Q'), stage: act.dataset.id, activity: null, text: '', note: '', status: 'open'}; if (!questionFromForm(q)) return; state.questions.push(q); stEdit = null; commit(); return; }
+    if (a === 'q-edit'){ stEdit = {kind: 'q-edit', id: act.dataset.id}; removing = null; render(true); const t = $('#qtext'); if (t){ document.querySelectorAll('.qform textarea').forEach(autoGrow); t.focus(); } return; }
+    if (a === 'q-save'){ const q = find(state.questions, act.dataset.id); if (q && questionFromForm(q)){ stEdit = null; commit(); } return; }
+    if (a === 'q-toggle'){ const q = find(state.questions, act.dataset.id); if (q){ q.status = q.status === 'answered' ? 'open' : 'answered'; q.updated = stampNow(); commit(); toast(q.status === 'answered' ? 'Marked answered.' : 'Reopened.'); } return; }
+    if (a === 'q-cmts'){ const id = act.dataset.id; pst.q = pst.q === id ? null : id; render(true); if (pst.q){ const t = document.querySelector('#q-' + CSS.escape(id) + ' .cmtform textarea'); if (t) t.focus(); } return; }
+    if (a === 'th-new'){ stEdit = {kind: 'th-new', id: act.dataset.id}; removing = null; render(true); const t = $('#thtext'); if (t) t.focus(); return; }
+    if (a === 'th-add'){ const t = $('#thtext'); if (!t || !t.value.trim()){ if (t) t.focus(); return; } state.threads.push({id: uid('H'), stage: act.dataset.id, text: t.value.trim(), updated: stampNow()}); stEdit = null; commit(); return; }
+    if (a === 'th-edit'){ stEdit = {kind: 'th-edit', id: act.dataset.id}; removing = null; render(true); const t = $('#thtext'); if (t){ autoGrow(t); t.focus(); } return; }
+    if (a === 'th-save'){ const h = find(state.threads, act.dataset.id); const t = $('#thtext'); if (h && t){ if (!t.value.trim()){ t.focus(); return; } h.text = t.value.trim(); h.updated = stampNow(); } stEdit = null; commit(); return; }
+    if (a === 'th-act'){ promoteThread(act.dataset.id, 'activity'); return; }
+    if (a === 'th-q'){ promoteThread(act.dataset.id, 'question'); return; }
+    if (a === 'stage-import'){ startImport(act.dataset.id); return; }
+    if (a === 'import-yes'){ if (importPending && !importPending.prior) applyImport(importPending.stage, importPending.data); return; }
+    if (a === 'import-no'){ importPending = null; render(true); return; }
     if (a === 'open-day'){ openDay(act.dataset.day, true); return; }
     if (a === 'close-day'){ noteExit(); logEditFlush(); cal.open = null; cal.closed = true; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
     if (a === 'note-edit'){ const sc = DAY_SECS.find(x => x.k === act.dataset.sec) || DAY_SECS[1]; editSecs.add(sc.k); noteEditing = true; renderDayPanel(); const t = document.getElementById(sc.id); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
@@ -2595,10 +3060,7 @@ document.addEventListener('click', e => {
     const id = n.dataset.id;
     if (n.closest('#svg-vision')) togglePlan('vpart', id);
     else if (n.closest('#svg-route')) togglePlan('stage', id);
-    else if (n.closest('#svg-cats')) togglePlan('cat', id);
     else if (n.dataset.in === 'stage') togglePlan('goact', id);
-    else if (n.closest('#mini-route')) togglePlan('part', id);
-    else if (n.classList.contains('actcard')) togglePlan('act', id);
     else if (n.classList.contains('entry')){ selected = (selected === id) ? null : id; applySelection(); }
   }
 });
@@ -2609,14 +3071,16 @@ document.addEventListener('change', e => {
     if (src.startsWith('note:')){ const nt = notesOf()[src.slice(5)]; if (nt && nt.text){ nt.text = mdToggleTask(nt.text, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
     else if (src.startsWith('goals:')){ const nt = notesOf()[src.slice(6)]; if (nt && nt.goals){ nt.goals = mdToggleTask(nt.goals, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
     else if (src.startsWith('review:')){ const nt = notesOf()[src.slice(7)]; if (nt && nt.review){ nt.review = mdToggleTask(nt.review, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
+    else if (/^(stage|activity|question|thread|task)-\w+:/.test(src)){ const m = src.match(/^(\w+)-(\w+):(.+)$/); const of = m[1], field = m[2] === 'result' ? 'result' : m[2] === 'note' ? 'note' : m[2], x = stageTarget(of, m[3]); if (x && x[field]){ x[field] = mdToggleTask(x[field], n, on); x.updated = stampNow(); } }
     else if (src.startsWith('log:')){ const l = find(state.log, src.slice(4)); if (l){ l.text = mdToggleTask(l.text, n, on); l.updated = stampNow(); } }
     else if (src.startsWith('cmt:') && typeof findComment === 'function'){ const rest = src.slice(4); const k = rest.indexOf(':'); const c = findComment(rest.slice(k + 1), rest.slice(0, k)); if (c){ c.text = mdToggleTask(c.text, n, on); c.updated = stampNow(); } }
     commit(); return;
   }
+  if (e.target.classList && e.target.classList.contains('linkact')){ const v = e.target.value; e.target.value = ''; const t = document.getElementById(lastNoteTA) || $('#noteedit'); if (v && t) insertAtCaret(t, '#' + v); return; }
   if (e.target.classList && e.target.classList.contains('status-sel')){
     const kind = e.target.dataset.kind, id = e.target.dataset.id, v = e.target.value;
     const t = kind === 'stage' ? find(state.stages, id) : find(state.activities, id);
-    if (t){ t.status = v; commit(); }
+    if (t){ t.status = v; t.updated = stampNow(); commit(); }
     return;
   }
   const f = e.target.closest('#logform'); if (!f) return;
@@ -2627,7 +3091,7 @@ document.addEventListener('change', e => {
 document.addEventListener('focusin', e => { if (isNoteTA(e.target)) lastNoteTA = e.target.id; });
 document.addEventListener('input', e => {
   if (isNoteTA(e.target)){ noteEditing = true; editSecs.add(e.target.dataset.sec); autoGrow(e.target); noteStatus('Unsaved changes'); clearTimeout(noteDraftTimer); noteDraftTimer = setTimeout(noteFlush, 120000); return; }
-  if (e.target.name === 'newtext' && e.target.value.trim()){ const r = e.target.closest('#logform').querySelector('input[name=outcome][value=reshaped]'); if (r) r.checked = true; }
+  if (e.target.classList && e.target.classList.contains('mdta')) autoGrow(e.target);
 });
 document.addEventListener('submit', e => {
   if (e.target.id === 'logform'){ e.preventDefault(); submitModal(); return; }
@@ -2637,6 +3101,11 @@ document.addEventListener('submit', e => {
   if (e.target.classList.contains('cmtform')){ e.preventDefault(); postComment(e.target); return; }
 });
 document.addEventListener('keydown', e => {
+  if (e.target && e.target.closest && e.target.closest('.stedit') && !e.target.closest('.cmtform')){
+    const box = e.target.closest('.stedit');
+    if (((e.key === 's' || e.key === 'S') || e.key === 'Enter') && (e.metaKey || e.ctrlKey)){ e.preventDefault(); const b = box.querySelector('[data-primary]'); if (b) b.click(); return; }
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && !e.shiftKey){ e.preventDefault(); const b = box.querySelector('[data-primary]'); if (b) b.click(); return; }
+  }
   if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey) && isNoteTA(e.target)){ e.preventDefault(); clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Note saved.' : 'Nothing new to save.'); return; }
   if ((e.key === 'Enter') && (e.metaKey || e.ctrlKey) && e.target && e.target.closest && e.target.closest('.cmtform')){ e.preventDefault(); postComment(e.target.closest('.cmtform')); return; }
   if (e.key === 'Escape'){
@@ -2658,16 +3127,17 @@ document.addEventListener('keydown', e => {
     if (view === 'plan'){
       if (removing){ removing = null; render(true); return; }
       if (addForm){ addForm = null; render(true); return; }
-      if (pst.part){ pst.part = null; selected = pst.stage; render(); return; }
-      if (pst.cat){ pst.cat = null; selected = pst.stage; render(); return; }
-      if (pst.act){ pst.act = null; selected = null; render(); return; }
-      if (pst.stage){ pst.stage = null; selected = null; render(); return; }
+      if (importPending){ importPending = null; render(true); return; }
+      if (stEdit){ stEdit = null; render(true); return; }
+      if (pst.q){ pst.q = null; render(true); return; }
+      if (pst.act){ pst.act = null; selected = pst.stage; render(true); return; }
+      if (pst.stage){ pst.stage = null; selected = null; render(true); return; }
       if (pst.vpart){ pst.vpart = null; selected = null; render(); return; }
       if (selected){ selected = null; applySelection(); }
     }
     return;
   }
-  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && e.target && (isNoteTA(e.target) || e.target.id === 'logedit-text')){
+  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && e.target && (isNoteTA(e.target) || e.target.id === 'logedit-text' || (e.target.classList && e.target.classList.contains('mdta')))){
     const t = e.target; const st0 = t.selectionStart; if (st0 !== t.selectionEnd) return;
     const before = t.value.slice(0, st0), after = t.value.slice(st0); const line = before.slice(before.lastIndexOf('\n') + 1);
     const m = line.match(/^(\s*)([-*+]|\d+[.)])(\s+)(\[( |x|X)\]\s*)?(.*)$/); if (!m) return;
@@ -2678,7 +3148,7 @@ document.addEventListener('keydown', e => {
     const ins = '\n' + m[1] + marker + m[3] + (m[4] ? '[ ] ' : '');
     t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length; return;
   }
-  if (e.key === 'Tab' && e.target && (e.target.id === 'outlineedit' || isNoteTA(e.target) || e.target.id === 'logedit-text')){
+  if (e.key === 'Tab' && e.target && (e.target.id === 'outlineedit' || isNoteTA(e.target) || e.target.id === 'logedit-text' || (e.target.classList && e.target.classList.contains('mdta')))){
     e.preventDefault(); const t = e.target; const st0 = t.selectionStart, en0 = t.selectionEnd;
     const before = t.value.slice(0, st0), after = t.value.slice(en0);
     const lineStart = before.lastIndexOf('\n') + 1;
@@ -2686,7 +3156,7 @@ document.addEventListener('keydown', e => {
     else { t.value = before.slice(0, lineStart) + '  ' + before.slice(lineStart) + after; t.selectionStart = t.selectionEnd = st0 + 2; }
     return;
   }
-  if (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing) return;
+  if (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit) return;
   if (e.target && e.target.closest && e.target.closest('textarea, input')) return;
   if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches && e.target.matches('[role="button"]') && !e.target.matches('button')){
     e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', {bubbles:true}));
