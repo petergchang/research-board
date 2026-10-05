@@ -1548,9 +1548,8 @@ function tasksHtml(st){
   const c = taskTally(st.id);
   const parts = [`<b>${c.pass} of ${c.n}</b> passing`]; if (c.fail) parts.push(c.fail + ' failing'); if (c.mixed) parts.push(c.mixed + ' mixed'); if (c.todo) parts.push(c.todo + ' not yet run');
   const judgedEditing = isEditing('field', st.id, 'judged');
-  const judged = !ts.length && !st.judged ? '' : judgedEditing ? `<div class="judged set"><div class="dsec-head"><span class="label">How a task is judged</span></div>${mdField('stage', st.id, 'judged', st.judged, {ph: 'What has to be true for a task to count as passing, mixed or failing.', min: 80})}</div>`
-    : st.judged ? `<div class="judged set"><div class="dsec-head"><span class="label">How a task is judged</span>${editLink('stage', st.id, 'judged', st.judged)}</div>${mdField('stage', st.id, 'judged', st.judged, {})}</div>`
-    : `<div class="judged"><b>How a task is judged:</b> not written yet. Write down what has to be true for a task to count as passing, so a status means the same thing every time. <button class="link" data-action="field-edit" data-of="stage" data-id="${esc(st.id)}" data-field="judged">Write it</button></div>`;
+  // a judging note shows only if one was written earlier (the empty prompt is gone)
+  const judged = !st.judged && !judgedEditing ? '' : `<div class="judged set"><div class="dsec-head"><span class="label">How a task is judged</span>${editLink('stage', st.id, 'judged', st.judged)}</div>${mdField('stage', st.id, 'judged', st.judged, {ph: 'What has to be true for a task to count as passing, mixed or failing.', min: 80})}</div>`;
   return `${ts.length ? `<div class="meter" aria-label="${c.pass} of ${c.n} tasks passing"><span class="bar">${ts.map(t => `<i class="${taskSt(t)}"></i>`).join('')}</span><span>${parts.join(' · ')}</span></div>` : ''}
     ${judged}
     ${ts.length ? `<div class="scorewrap"><table class="score"><thead><tr><th class="num">#</th><th>Task</th>${col ? `<th class="size">${esc(col)}</th>` : ''}<th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
