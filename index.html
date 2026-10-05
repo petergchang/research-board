@@ -1034,6 +1034,31 @@ a.atag:hover{background:var(--accent-line)}
   .act-sheet .sheetmeta .ofn{display:none}
 }
 
+/* ---------- success criteria checklist ---------- */
+.notebody.crit .md li.task{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
+.notebody.crit .md li.task + li.task{margin-top:2px}
+.notebody.crit .md li.task input:checked + span{text-decoration:none;color:var(--ink)}
+.crit a.atag{font-family:var(--body);font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;line-height:1.5;vertical-align:.12em}
+.crit a.atag .hash{display:none}
+.crit a.atag.tag-done{background:var(--ok-soft);color:var(--ok)}
+.crit a.atag.tag-done::after{content:" ✓"}
+.crit a.atag.tag-running{background:var(--run-soft);color:var(--run)}
+.crit a.atag.tag-parked{opacity:.7}
+.crittag{font-family:var(--body);font-size:12px;padding:1px 4px;border:1px dashed var(--line);border-radius:6px;background:transparent;color:var(--ink-3);max-width:150px;cursor:pointer}
+.crittag:hover,.crittag:focus{border-color:var(--accent-line);color:var(--accent)}
+@media (hover:hover){ .crit li.task .crittag{opacity:0;transition:opacity .12s} .crit li.task:hover .crittag,.crit li.task .crittag:focus{opacity:1} }
+.crithint{font-size:13px;margin-top:8px}
+.crithint code,.mdf .tools code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line-2);padding:0 5px;border-radius:4px;color:var(--ink)}
+.mdf .tools .linkact{font-size:13px;padding:4px 8px;max-width:200px;color:var(--ink-2)}
+.certifies{margin-top:16px;padding:10px 14px 11px;border-radius:8px;background:var(--surface-2);border-left:3px solid var(--ok)}
+.certifies .label{font-size:13px;font-weight:700;color:var(--ink-2)}
+.certifies ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+.certifies li{display:flex;align-items:baseline;gap:9px;font-size:15px}
+.certifies .ck{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:4px;border:1.5px solid var(--ink-3);font-size:10px;font-weight:700;flex:0 0 auto;transform:translateY(2px);box-sizing:border-box}
+.certifies li.met .ck{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.certifies .link{font-family:var(--read);font-weight:400;color:var(--ink);text-align:left}
+.certifies .link:hover{color:var(--accent)}
+
 /* ---------- gate ---------- */
 .gate{margin:12vh auto 40px;max-width:400px;padding:30px 30px 26px;gap:14px}
 .gatebrand{display:flex;align-items:center;gap:12px}
@@ -1134,7 +1159,7 @@ function mdInline(s){
     t = t.replace(/!\[([^\]\n]*)\]\((img:[A-Za-z0-9]+|https?:\/\/[^\s)]+)\)/g, (m, alt, src) => hold(src.startsWith('img:') ? `<img class="mdimg" data-img="${src.slice(4)}" alt="${alt}" title="${alt}">` : `<img class="mdimg" src="${src}" alt="${alt}">`));
     t = t.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, (m, a, h) => hold(`<a href="${h}" target="_blank" rel="noopener">${mdEmph(a)}</a>`));
     // #A12 links to activity A12
-    t = t.replace(/(^|[^\w&\/])#(A\d+)(?![\w])/g, (m, pre, id) => { const a = state && state.activities ? state.activities.find(x => x.id === id) : null; return a ? pre + hold(`<a class="atag" href="#" data-action="goto-act" data-id="${id}" title="${esc(a.name)}">#${id}</a>`) : m; });
+    t = t.replace(/(^|[^\w&\/])#(A\d+)(?![\w])/g, (m, pre, id) => { const a = state && state.activities ? state.activities.find(x => x.id === id) : null; return a ? pre + hold(`<a class="atag tag-${esc(a.status)}" href="#" data-action="goto-act" data-id="${id}" title="${esc(a.id + ' · ' + a.name + ' (' + a.status + ')')}"><span class="hash">#</span>${id}</a>`) : m; });
     t = mdEmph(t);
     return t.replace(/\u0001(\d+)\u0001/g, (m, i) => keep[i]);
   }).join('');
@@ -1476,6 +1501,69 @@ const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(
 const nextActId = () => nextId('A', state.activities.concat((state.removedIds || []).filter(x => /^A\d+$/.test(x)).map(x => ({id: x}))));
 const stageTasks = sid => (state.tasks || []).filter(t => t.stage === sid);
 const stageQs = sid => (state.questions || []).filter(q => q.stage === sid);
+
+// ----- success criteria: a Markdown checklist; #A tags on an item name the activities that show it -----
+const CRIT_RE = /^(\s*([-*+]|\d+[.)])\s+)\[( |x|X)\](.*)$/;
+const TAG_G = /(^|[^\w&/])#(A\d+)(?![\w])/g;
+function critItems(st){
+  const out = []; let n = 0;
+  for (const line of String(st && st.criteria || '').split('\n')){
+    const m = line.match(CRIT_RE); if (!m) continue;
+    const tags = Array.from(m[4].matchAll(TAG_G)).map(x => x[2]);
+    out.push({n: n++, done: m[3] !== ' ', tags, text: mdPlain(m[4].replace(TAG_G, '$1')).replace(/\s+/g, ' ').trim()});
+  }
+  return out;
+}
+function critTally(st){ const items = critItems(st); return {n: items.length, done: items.filter(x => x.done).length, items}; }
+function mdEditTask(src, n, fn){ let k = -1; return String(src).split('\n').map(line => { if (!CRIT_RE.test(line)) return line; k++; return k === n ? fn(line) : line; }).join('\n'); }
+function certifiedBy(aid){ const out = []; for (const st of state.stages) for (const it of critItems(st)) if (it.tags.includes(aid)) out.push({st, it}); return out; }
+function critExtras(st){
+  const c = critTally(st); const editing = isEditing('field', st.id, 'criteria');
+  const meter = c.n ? `<div class="meter" aria-label="${c.done} of ${c.n} met"><span class="bar">${c.items.map(it => `<i class="${it.done ? 'pass' : 'todo'}"></i>`).join('')}</span><span><b>${c.done} of ${c.n}</b> met${c.n - c.done ? ' · ' + (c.n - c.done) + ' to go' : ''}</span></div>`
+    : (st.criteria && !editing ? `<p class="faint crithint">To make a checklist, write each check as <code>- [ ] …</code>. Tag the activities that show it with <code>#A3</code>.</p>` : '');
+  const judged = st.judged || isEditing('field', st.id, 'judged') ? `<div class="judged set"><div class="dsec-head"><span class="label">How a check is judged</span>${editLink('stage', st.id, 'judged', st.judged)}</div>${mdField('stage', st.id, 'judged', st.judged, {ph: '', min: 80})}</div>` : '';
+  return meter + judged;
+}
+function mountCrit(){
+  const st = find(state.stages, pst.stage); const box = document.querySelector('#st-criteria .md[data-src^="stage-criteria:"]'); if (!st || !box) return;
+  const items = critItems(st); const acts = state.activities.filter(a => a.stage === st.id), others = state.activities.filter(a => a.stage !== st.id);
+  const opt = (a, pre) => `<option value="${pre}${esc(a.id)}">${esc(a.id)} · ${esc(shortOf({name: a.short || a.name}, 40))}</option>`;
+  box.querySelectorAll('li.task').forEach(li => {
+    const inp = li.querySelector('input[data-task]'); if (!inp) return; const it = items[Number(inp.dataset.task)]; if (!it) return;
+    const free = acts.filter(a => !it.tags.includes(a.id)), freeO = others.filter(a => !it.tags.includes(a.id)), tagged = it.tags.map(id => find(state.activities, id)).filter(Boolean);
+    const sel = document.createElement('select'); sel.className = 'crittag'; sel.dataset.n = it.n; sel.dataset.stage = st.id;
+    sel.setAttribute('aria-label', 'Tag an activity that shows this'); sel.title = 'Tag the activities whose results show this';
+    sel.innerHTML = `<option value="">+ activity</option>${free.length ? `<optgroup label="Tag (${esc(st.id)})">${free.map(a => opt(a, '')).join('')}</optgroup>` : ''}${freeO.length ? `<optgroup label="Tag (other stages)">${freeO.map(a => opt(a, '')).join('')}</optgroup>` : ''}${tagged.length ? `<optgroup label="Remove tag">${tagged.map(a => opt(a, '-')).join('')}</optgroup>` : ''}`;
+    li.appendChild(sel);
+  });
+}
+function certHtml(a){
+  const cs = certifiedBy(a.id); if (!cs.length) return '';
+  return `<div class="certifies"><span class="label">Certifies</span><ul>${cs.map(({st, it}) => `<li class="${it.done ? 'met' : ''}"><span class="ck" title="${it.done ? 'Ticked as met' : 'Not ticked yet'}">${it.done ? '✓' : ''}</span><button class="link" data-action="goto-crit" data-id="${esc(st.id)}" title="Open the ${esc(st.id)} success criteria">${esc(it.text || 'Untitled check')}</button>${st.id !== a.stage ? `<span class="faint">${esc(st.id)}</span>` : ''}</li>`).join('')}</ul></div>`;
+}
+function taskLines(ts){
+  const lines = []; let prev = null;
+  for (const t of ts){
+    const g = t.group || '';
+    if (g !== prev){ if (lines.length) lines.push(''); if (g){ const k = g.indexOf(' · '); lines.push((k < 0 ? g : g.slice(0, k) + ' (' + g.slice(k + 3) + ')') + ':'); } prev = g; }
+    let line = '- [' + (t.status === 'pass' ? 'x' : ' ') + '] ' + (t.name || 'Task') + (t.detail ? ' (' + t.detail + ')' : '') + (t.status === 'fail' ? ' (failing)' : t.status === 'mixed' ? ' (mixed)' : '');
+    const res = String(t.result || '').trim();
+    if (res){ const rl = res.split('\n'); line += rl.length === 1 ? ': ' + rl[0] : '\n' + rl.map(x => '  ' + x).join('\n'); }
+    lines.push(line);
+  }
+  return lines.join('\n');
+}
+// schema 3: stage tasks become checklist items in the success criteria
+function migrate3(s){
+  if ((s.schema || 0) >= 3){ normActs(s); return false; }
+  for (const st of s.stages){
+    const ts = s.tasks.filter(t => t.stage === st.id); if (!ts.length) continue;
+    st.criteria = ((st.criteria || '').replace(/\s+$/, '') + '\n\n' + taskLines(ts)).trim();
+    if (s.comments) for (const t of ts) if (s.comments[t.id]){ s.comments[st.id] = (s.comments[st.id] || []).concat(s.comments[t.id]); delete s.comments[t.id]; }
+  }
+  s.removedIds = Array.from(new Set((s.removedIds || []).concat(s.tasks.map(t => t.id))));
+  s.tasks = []; s.schema = 3; normActs(s); return true;
+}
 function taskTally(sid){ const c = {n: 0, pass: 0, fail: 0, mixed: 0, todo: 0}; for (const t of stageTasks(sid)){ c.n++; c[taskSt(t)]++; } return c; }
 function roadSvg(){
   const W = 160, H = 96, gap = 26, y = 14, AW = 44;
@@ -1485,13 +1573,13 @@ function roadSvg(){
   state.stages.forEach((st, i) => {
     if (i) P.push(edge([[x - gap, y + H/2], [x, y + H/2]], state.stages[i-1].id, st.id));
     const lines = wrap(shortOf(st, 40), 18, 2);
-    const c = taskTally(st.id);
+    const c = critTally(st);
     let foot;
     if (c.n){
       const inner = W - 28, sg = c.n > 1 ? Math.min(3, inner / c.n / 4) : 0, sw = Math.min(16, (inner - (c.n - 1) * sg) / c.n);
       let sx = x + (W - (c.n * sw + (c.n - 1) * sg)) / 2;
-      foot = stageTasks(st.id).map(t => { const r = `<rect class="seg ${taskSt(t)}" x="${sx.toFixed(1)}" y="${y + H - 33}" width="${sw.toFixed(1)}" height="6" rx="2"></rect>`; sx += sw + sg; return r; }).join('')
-        + `<text class="s meter-t" x="${x + W/2}" y="${y + H - 12}" text-anchor="middle">${c.pass} of ${c.n} ${c.n === 1 ? 'task' : 'tasks'} passing</text>`;
+      foot = c.items.map(it => { const r = `<rect class="seg ${it.done ? 'pass' : 'todo'}" x="${sx.toFixed(1)}" y="${y + H - 33}" width="${sw.toFixed(1)}" height="6" rx="2"></rect>`; sx += sw + sg; return r; }).join('')
+        + `<text class="s meter-t" x="${x + W/2}" y="${y + H - 12}" text-anchor="middle">${c.done} of ${c.n} met</text>`;
     } else foot = `<text class="s" x="${x + W/2}" y="${y + H - 16}" text-anchor="middle">${esc(st.status)}</text>`;
     P.push(`<g class="box stage st-${esc(st.status)} node${pst.stage === st.id ? ' open' : ''}" data-id="${esc(st.id)}" tabindex="0" role="button" aria-label="${esc(st.name)}. Click to open.">
       <rect x="${x}" y="${y}" width="${W}" height="${H}" rx="9"></rect>
@@ -1541,7 +1629,7 @@ const cmts = t => typeof commentsBlock === 'function' ? commentsBlock(t) : '';
 const cpillOf = t => typeof cpill === 'function' ? cpill(t) : '';
 function editLink(of, id, field, value){ return value && !isEditing('field', id, field) ? `<button class="link" data-action="field-edit" data-of="${of}" data-id="${esc(id)}" data-field="${field}">Edit</button>` : ''; }
 function mdField(of, id, field, value, o){
-  if (isEditing('field', id, field) && stEdit.of === of) return `<div class="mdf stedit"><textarea id="fieldedit" class="mdta" data-min="${o.min || 96}" placeholder="${esc(o.ph || '')}">${esc(value || '')}</textarea><div class="tools"><button class="btn small primary" data-primary data-action="field-save">Save</button><button class="btn small" data-action="st-cancel">Cancel</button><span class="faint">Markdown works here. Ctrl/⌘+Enter saves.</span></div></div>`;
+  if (isEditing('field', id, field) && stEdit.of === of) return `<div class="mdf stedit"><textarea id="fieldedit" class="mdta" data-min="${o.min || 96}" placeholder="${esc(o.ph || '')}">${esc(value || '')}</textarea><div class="tools"><button class="btn small primary" data-primary data-action="field-save">Save</button><button class="btn small" data-action="st-cancel">Cancel</button>${o.tools || ''}<span class="faint">Markdown works here. Ctrl/⌘+Enter saves.</span></div></div>`;
   if (!value) return o.empty ? `<button class="addsec" data-action="field-edit" data-of="${of}" data-id="${esc(id)}" data-field="${field}"><span class="plus">+</span>${esc(o.empty)}</button>` : '';
   return `<div class="notebody ${o.cls || ''}">${md(value, of + '-' + field + ':' + id)}</div>`;
 }
@@ -1604,7 +1692,7 @@ function planLead(p){
 // ----- activities as logs: each activity has its own page with Plan, Notes, Results and Lessons -----
 const ACT_DOCS = [
   {k:'plan',    title:'Plan',    min:140, add:'Write the plan',        ph:'What you will do and how. A list works well.'},
-  {k:'notes',   title:'Notes',   min:320, add:'Start today’s notes',   ph:'Write as you work: what you ran, with which settings, what happened.'},
+  {k:'notes',   title:'Notes',   min:320, add:'Start the notes',       ph:'Write as you work: what you ran, with which settings, what happened.'},
   {k:'results', title:'Results', min:150, add:'Add results',           ph:'Findings: numbers, tables, plots. Paste a table or drop an image.'},
   {k:'lessons', title:'Lessons', min:110, add:'Add lessons',           ph:'What you would tell yourself, or anyone, before doing this again.'},
 ];
@@ -1693,6 +1781,7 @@ function actRow(a){
   if (res) parts.push(`<span class="alead"><b>Results:</b> ${esc(res)}</span>`);
   else if (!ACT_DOC_KEYS.some(k => a[k])) parts.push('Not started');
   if (openQs) parts.push(`<span class="acount">${openQs} open ${openQs === 1 ? 'question' : 'questions'}</span>`);
+  const cert = certifiedBy(a.id); if (cert.length) parts.push(`<span class="acount">certifies ${cert.length} ${cert.length === 1 ? 'check' : 'checks'}</span>`);
   if (last) parts.push(`<span class="acount">last written ${esc(fmt(last))}</span>`);
   return `<li class="act st-${esc(a.status)}" id="act-${esc(a.id)}" data-action="act-open" data-id="${esc(a.id)}" role="button" tabindex="0"><div class="ahead"><span class="anum">${esc(a.id)}</span><span class="aname">${esc(a.name)}</span>${cpillOf(a.id)}${pill(a.status)}</div>${parts.length ? `<div class="asub">${parts.join(' · ')}</div>` : ''}</li>`;
 }
@@ -1715,7 +1804,7 @@ function actSheet(){
     const extra = d.k === 'results' ? loggedResults(a) : '';
     const dateBtn = d.k === 'notes' ? `<button class="link datebtn" data-action="act-date" title="Add today’s date as a heading at the end of the notes">+ Today’s date</button>` : '';
     if (editing) return `<section class="dsec editing" data-asec="${d.k}"><div class="dsec-head"><span class="label">${d.title}</span>${dateBtn}</div><textarea id="act-${d.k}-ed" class="actta mdta" data-act="${esc(a.id)}" data-asec="${d.k}" data-min="${d.min}" placeholder="${esc(d.ph)}">${esc(v)}</textarea>${extra}</section>`;
-    if (!v) return `<section class="dsec empty" data-asec="${d.k}"><button class="addsec" data-action="${d.k === 'notes' ? 'act-date' : 'act-edit'}" data-sec="${d.k}"><span class="plus">+</span>${d.add}</button>${extra}</section>`;
+    if (!v) return `<section class="dsec empty" data-asec="${d.k}"><button class="addsec" data-action="act-edit" data-sec="${d.k}"><span class="plus">+</span>${d.add}</button>${extra}</section>`;
     return `<section class="dsec" data-asec="${d.k}"><div class="dsec-head"><span class="label">${d.title}</span><button class="link" data-action="act-edit" data-sec="${d.k}">Edit</button>${dateBtn}</div><div class="notebody">${md(v, 'activity-' + d.k + ':' + a.id)}</div>${extra}</section>`;
   }).join('');
   const tools = editingAny ? `<div class="tools daytools"><button class="btn small primary" data-action="act-save" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="act-done" title="Save and close the editors">Done</button><button class="btn small" data-action="act-cancel" title="Put the activity back the way it was when you started editing">Cancel</button><button type="button" class="btn small" data-action="img-pick" data-for="__act">Attach image</button>${mdHelpHtml()}<span class="notestatus" id="actstatus"></span><span class="faint autosave">Autosaves every 2 min and when you leave the page</span></div>` : '';
@@ -1730,6 +1819,7 @@ function actSheet(){
       <div class="daynav"><button class="navbtn" data-action="act-step" data-dir="-1" ${prev ? `title="${esc(prev.id + ' · ' + prev.name)}"` : 'disabled'} aria-label="Previous activity">‹</button><button class="navbtn" data-action="act-step" data-dir="1" ${next ? `title="${esc(next.id + ' · ' + next.name)}"` : 'disabled'} aria-label="Next activity">›</button><button class="navbtn" data-action="act-back" title="Back to ${esc(st ? st.id : 'the stage')}" aria-label="Close">×</button></div>
       <h2 class="sttitle"><span>${esc(a.name)}</span>${statusSelect('activity', a.id, a.status, STATUS_ACT)}</h2>
     </header>
+    ${certHtml(a)}
     ${addForm && addForm.kind === 'edit-activity' && addForm.id === a.id ? addFormHtml() : ''}
     <div class="daynote">${secs}${tools}</div>
     ${qsHtml}
@@ -1783,7 +1873,7 @@ function stageSheet(){
     </header>
     ${addForm && addForm.kind === 'edit-stage' && addForm.id === st.id ? addFormHtml() : ''}
     ${sec('goal', 'Goal', editLink('stage', st.id, 'goal', st.goal), mdField('stage', st.id, 'goal', st.goal, {empty: 'Write the goal', ph: 'What this stage has to show.', cls: 'crit'}))}
-    ${sec('criteria', 'Success criteria', editLink('stage', st.id, 'criteria', st.criteria), mdField('stage', st.id, 'criteria', st.criteria, {empty: 'Write the success criteria', ph: 'What has to be true for this stage to be done. If it comes down to a set of checks, add them below as tasks.', cls: 'crit'}) + tasksHtml(st))}
+    ${sec('criteria', 'Success criteria', editLink('stage', st.id, 'criteria', st.criteria), mdField('stage', st.id, 'criteria', st.criteria, {empty: 'Write the success criteria', ph: 'What has to be true for this stage to be done. Write each check as - [ ] … and tag the activities that show it with #A3 (or use “Tag an activity”).', cls: 'crit', min: 160, tools: linkActSelect('fieldedit', st.id)}) + critExtras(st))}
     ${sec('activities', 'Activities', `${as.length ? `<span class="count">${as.length}</span>` : ''}<button class="link" data-action="add-form" data-kind="activity" data-stage="${esc(st.id)}">+ Add</button>`,
       `${addForm && addForm.kind === 'activity' && addForm.stage === st.id ? addFormHtml() : ''}${as.length ? `<ol class="acts">${as.map(a => actRow(a)).join('')}</ol>` : `<p class="faint">No activities yet.</p>`}`)}
     ${sec('questions', 'Open questions', `${qs.length ? `<span class="count">${qOpen.length} open${qDone.length ? ' · ' + qDone.length + ' answered' : ''}</span>` : ''}<button class="link" data-action="q-new" data-id="${esc(st.id)}">+ Add</button>`,
@@ -1791,7 +1881,7 @@ function stageSheet(){
     ${sec('threads', 'Loose threads', `${ths.length ? `<span class="count">${ths.length}</span>` : ''}<button class="link" data-action="th-new" data-id="${esc(st.id)}">+ Add</button>`,
       `${isEditing('th-new', st.id) ? `<div class="thform stedit"><textarea id="thtext" class="mdta" data-min="60" placeholder="An idea you are not acting on yet"></textarea><div class="terow"><button class="btn small primary" data-primary data-action="th-add" data-id="${esc(st.id)}">Add</button><button class="btn small" data-action="st-cancel">Cancel</button></div></div>` : ''}${ths.length ? `<ul class="ths">${ths.map(thItem).join('')}</ul>` : `<p class="faint">Ideas you are not acting on yet. Each can later become an activity or a question.</p>`}`)}
     <div class="inside">${cmts(st.id)}</div>
-    <footer class="stfoot"><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Swap with the stage before it">← Earlier</button><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="1" ${i === state.stages.length - 1 ? 'disabled' : ''} title="Swap with the stage after it">Later →</button><button class="btn small" data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button class="btn small" data-action="stage-import" data-id="${esc(st.id)}" title="Fill this stage from a prepared .json file">Import from file</button><span class="spacer"></span>${removeControls('stage', st.id, `Remove ${st.id} with its ${as.length} activities, ${stageTasks(st.id).length} tasks and ${qs.length} questions?`)}</footer>
+    <footer class="stfoot"><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Swap with the stage before it">← Earlier</button><button class="btn small" data-action="stage-move" data-id="${esc(st.id)}" data-dir="1" ${i === state.stages.length - 1 ? 'disabled' : ''} title="Swap with the stage after it">Later →</button><button class="btn small" data-action="new-log" data-kind="decision" data-stage="${esc(st.id)}">Log a decision</button><button class="btn small" data-action="stage-import" data-id="${esc(st.id)}" title="Fill this stage from a prepared .json file">Import from file</button><span class="spacer"></span>${removeControls('stage', st.id, `Remove ${st.id} with its ${as.length} activities and ${qs.length} questions?`)}</footer>
     ${imp}
   </article>`;
 }
@@ -1819,7 +1909,7 @@ function renderPlan(){
     ${sectionHtml('activities', 'All activities', activitiesBody())}
   </div></div>`;
 }
-function mountRoute(){ applySelection(); const s = document.getElementById('panelbox-route'); if (s){ typeset(s); s.querySelectorAll('textarea.mdta').forEach(autoGrow); } mountAct(document.getElementById('panel-act')); }
+function mountRoute(){ applySelection(); const s = document.getElementById('panelbox-route'); if (s){ typeset(s); s.querySelectorAll('textarea.mdta').forEach(autoGrow); mountCrit(); } mountAct(document.getElementById('panel-act')); }
 function scrollToEl(id, block){ setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({block: block || 'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 40); }
 function togglePlan(kind, id){
   if (kind === 'goact'){ openAct(id); return; }
@@ -1856,6 +1946,8 @@ function renumberActivities(before){
   state.activities = order; for (const a of order){ a.id = m(a.id); a.updated = now; }
   const gone = new Set(state.removedIds || []); for (const id of (before || [])) if (!order.some(a => a.id === id)) gone.add(id); for (const a of order) gone.delete(a.id); state.removedIds = Array.from(gone);
   for (const q of (state.questions || [])) if (q.activity){ q.activity = m(q.activity); q.updated = now; }
+  for (const st of state.stages){ let ch = false; for (const k of ['goal', 'criteria']) if (st[k]){ const t = retag(st[k], map); if (t !== st[k]){ st[k] = t; ch = true; } } if (ch) st.updated = now; }
+  for (const a of order) for (const k of ACT_DOC_KEYS) if (a[k]){ const t = retag(a[k], map); if (t !== a[k]){ a[k] = t; a.stamps = a.stamps || {}; a.stamps[k] = now; } }
   for (const l of state.log){ let ch = false; if (l.reportsOn && map[l.reportsOn]){ l.reportsOn = m(l.reportsOn); ch = true; } if (l.about && map[l.about]){ l.about = m(l.about); ch = true; } if (l.text){ const t = retag(l.text, map); if (t !== l.text){ l.text = t; ch = true; } } if (ch) l.updated = now; }
   const notes = notesOf(); for (const d of Object.keys(notes)){ const n = notes[d]; let ch = false; for (const k of ['goals', 'text', 'review']) if (n[k]){ const t = retag(n[k], map); if (t !== n[k]){ n[k] = t; ch = true; } } if (ch) n.stamp = now; }
   if (state.comments){ const nc = {}; for (const t of Object.keys(state.comments)) nc[m(t)] = (nc[m(t)] || []).concat(state.comments[t]); state.comments = nc; }
@@ -1977,7 +2069,7 @@ function outlineToText(v){ if (typeof v === 'string') return v; if (!Array.isArr
 function migrateState(s){
   if (!s || typeof s !== 'object') return false;
   for (const k of ['tasks', 'questions', 'threads', 'removedIds', 'activities', 'stages', 'artifacts', 'log']) if (!Array.isArray(s[k])) s[k] = [];
-  if ((s.schema || 1) >= 2){ normActs(s); return false; }
+  if ((s.schema || 1) >= 2) return migrate3(s);
   for (const st of s.stages){ st.goal = outlineToText(st.goal); for (const k of ['criteria', 'judged', 'taskCol']) if (typeof st[k] !== 'string') st[k] = ''; }
   const qid = u => 'Q' + String(u).replace(/^U/, '');
   for (const u of (s.unknowns || [])){
@@ -1991,7 +2083,7 @@ function migrateState(s){
   if (s.comments) for (const k of Object.keys(s.comments)) if (/^U\d+$/.test(k)){ const nk = qid(k); s.comments[nk] = (s.comments[nk] || []).concat(s.comments[k]); delete s.comments[k]; }
   delete s.unknowns;
   s.schema = 2;
-  normActs(s);
+  migrate3(s);
   return true;
 }
 function normActs(s){
@@ -2007,7 +2099,7 @@ function importSummary(d){
   const parts = [];
   if (d.stage) parts.push('It sets the stage’s ' + ['name', 'goal', 'criteria', 'judged'].filter(k => typeof d.stage[k] === 'string').map(k => k === 'criteria' ? 'success criteria' : k === 'judged' ? 'judging rule' : k).join(', ') + '.');
   const adds = [], ups = [];
-  if (n('tasks')) adds.push(n('tasks') + ' tasks');
+  if (n('tasks')) adds.push(n('tasks') + ' checklist items');
   if (n('activities') - upd('activities')) adds.push((n('activities') - upd('activities')) + ' activities');
   if (n('questions') - upd('questions')) adds.push((n('questions') - upd('questions')) + ' questions');
   if (n('threads')) adds.push(n('threads') + ' loose threads');
@@ -2023,7 +2115,8 @@ function applyImport(sid, d){
   const now = stampNow(); const before = state.activities.map(a => a.id);
   if (d.stage){ for (const k of ['name', 'short', 'goal', 'criteria', 'judged', 'taskCol']) if (typeof d.stage[k] === 'string') st[k] = d.stage[k]; if (STATUS_STAGE.includes(d.stage.status)) st.status = d.stage.status; st.updated = now; }
   const same = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
-  for (const t of (d.tasks || [])){ if (stageTasks(sid).some(x => same(x.name, t.name) && same(x.group, t.group))) continue; state.tasks.push({id: uid('T'), stage: sid, group: t.group || '', name: t.name || 'Task', detail: t.detail || '', status: TASK_ST[t.status] ? t.status : 'todo', result: t.result || '', updated: now}); }
+  const newTasks = (d.tasks || []).filter(t => !critItems(st).some(it => same(it.text.replace(/\s*\(.*$/, ''), t.name)));
+  if (newTasks.length){ st.criteria = ((st.criteria || '').replace(/\s+$/, '') + '\n\n' + taskLines(newTasks)).trim(); st.updated = now; }
   const listed = [];
   for (const a of (d.activities || [])){
     let x = a.match ? state.activities.find(y => y.id === a.match) : state.activities.find(y => y.stage === sid && same(y.name, a.name));
@@ -2196,9 +2289,11 @@ function carryGoals(d){
   t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + out; t.dispatchEvent(new Event('input', {bubbles: true})); t.focus();
 }
 const MD_HELP = [['- item', 'bullet'], ['1. item', 'numbered'], ['- [ ] goal', 'box to tick'], ['**bold**', 'bold'], ['*italic*', 'italic'], ['`code`', 'code'], ['## Heading', 'heading'], ['> quote', 'quote'], ['| a | b |', 'table (then |---|---|)'], ['\\( x^2 \\)', 'math'], ['Tab / Shift+Tab', 'indent / outdent'], ['Paste or drop', 'an image'], ['#A3', 'link to activity A3']];
-function linkActSelect(){
-  const groups = state.stages.map(s => { const as = state.activities.filter(a => a.stage === s.id); return as.length ? `<optgroup label="${esc(s.id + ' · ' + shortOf(s, 30))}">${as.map(a => `<option value="${esc(a.id)}">${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join('')}</optgroup>` : ''; }).join('');
-  return groups ? `<select class="linkact" aria-label="Link this day to an activity" title="Adds a tag like #A3 where your cursor is; the day then shows up on that activity"><option value="">Link an activity…</option>${groups}</select>` : '';
+function linkActSelect(forId, sid){
+  const order = sid ? state.stages.filter(s => s.id === sid).concat(state.stages.filter(s => s.id !== sid)) : state.stages;
+  const lab = forId ? 'Tag an activity…' : 'Link an activity…';
+  const groups = order.map(s => { const as = state.activities.filter(a => a.stage === s.id); return as.length ? `<optgroup label="${esc(s.id + ' · ' + shortOf(s, 30))}">${as.map(a => `<option value="${esc(a.id)}">${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join('')}</optgroup>` : ''; }).join('');
+  return groups ? `<select class="linkact"${forId ? ` data-for="${forId}"` : ''} aria-label="${lab}" title="${forId ? 'Adds a tag like #A3 where your cursor is' : 'Adds a tag like #A3 where your cursor is; the day then shows up on that activity'}"><option value="">${lab}</option>${groups}</select>` : '';
 }
 function insertAtCaret(t, text){
   const st0 = t.selectionStart != null ? t.selectionStart : t.value.length, en0 = t.selectionEnd != null ? t.selectionEnd : st0;
@@ -3180,6 +3275,7 @@ document.addEventListener('click', e => {
     if (a === 'act-save'){ clearTimeout(actDraftTimer); const ch = actFlush(); toast(ch ? 'Saved.' : 'Nothing new to save.'); const t = lastActTA && document.getElementById(lastActTA); if (t) t.focus({preventScroll: true}); return; }
     if (a === 'act-done'){ const ch = actExit(); render(true); toast(ch ? 'Saved.' : 'No changes.'); return; }
     if (a === 'act-cancel'){ actCancel(); return; }
+    if (a === 'goto-crit'){ leaveEditors(); view = 'plan'; try { localStorage.setItem('rb.view', view); } catch(e){} sections.roadmap = true; pst.stage = act.dataset.id; pst.act = null; selected = pst.stage; render(true); scrollToEl('st-criteria', 'start'); return; }
     if (a === 'act-move'){ if (moveWithin(state.activities, act.dataset.id, Number(act.dataset.dir))) commit(); return; }
     if (a === 'goto-act'){ e.preventDefault(); openAct(act.dataset.id); return; }
     if (a === 'goto-q'){ const q = find(state.questions, act.dataset.id); if (q){ const el = document.getElementById('q-' + q.id); if (el && typeof flash === 'function') flash(el); else gotoNode(q.id); } return; }
@@ -3259,7 +3355,13 @@ document.addEventListener('change', e => {
     else if (src.startsWith('cmt:') && typeof findComment === 'function'){ const rest = src.slice(4); const k = rest.indexOf(':'); const c = findComment(rest.slice(k + 1), rest.slice(0, k)); if (c){ c.text = mdToggleTask(c.text, n, on); c.updated = stampNow(); } }
     commit(); return;
   }
-  if (e.target.classList && e.target.classList.contains('linkact')){ const v = e.target.value; e.target.value = ''; const t = document.getElementById(lastNoteTA) || $('#noteedit'); if (v && t) insertAtCaret(t, '#' + v); return; }
+  if (e.target.classList && e.target.classList.contains('linkact')){ const v = e.target.value; e.target.value = ''; const t = e.target.dataset.for ? document.getElementById(e.target.dataset.for) : (document.getElementById(lastNoteTA) || $('#noteedit')); if (v && t){ insertAtCaret(t, '#' + v); autoGrow(t); } return; }
+  if (e.target.classList && e.target.classList.contains('crittag')){
+    const v = e.target.value; const st = find(state.stages, e.target.dataset.stage); const n = Number(e.target.dataset.n); if (!v || !st) return;
+    const id = v.replace(/^-/, ''); const drop = v.startsWith('-');
+    st.criteria = mdEditTask(st.criteria, n, line => drop ? line.replace(new RegExp('\\s*#' + id + '(?![\\w])', 'g'), '') : line.replace(/\s+$/, '') + ' #' + id);
+    st.updated = stampNow(); commit(); toast(drop ? 'Tag removed.' : 'Tagged ' + id + '.'); return;
+  }
   if (e.target.classList && e.target.classList.contains('status-sel')){
     const kind = e.target.dataset.kind, id = e.target.dataset.id, v = e.target.value;
     const t = kind === 'stage' ? find(state.stages, id) : find(state.activities, id);
