@@ -1001,6 +1001,39 @@ a.atag:hover{background:var(--accent-line)}
   .linkact{max-width:150px}
 }
 
+/* ---------- the activity page ---------- */
+.act-sheet{max-width:900px;margin:0 auto 16px;scroll-margin-top:12px}
+.act-sheet .sheetmeta .ofn{color:var(--ink-3)}
+.act-sheet .sheethead{padding-bottom:16px}
+.act-sheet .dsec{margin-top:26px}
+.act-sheet .dsec.empty{margin-top:12px}
+.act-sheet .dsec-head .datebtn{color:var(--accent)}
+.act-sheet .notebody .md > h3{font-family:var(--display);font-size:17.5px;font-weight:650;letter-spacing:-.005em;color:var(--ink);margin-top:24px;padding-top:16px;border-top:1px solid var(--line-2)}
+.act-sheet .notebody .md > h3:first-child{margin-top:4px;padding-top:0;border-top:0}
+.act-sheet .dsec[data-asec="lessons"]:not(.empty):not(.editing){margin-top:30px;padding:14px 18px 16px;background:var(--surface-2);border-radius:8px}
+.act-sheet .ssec{margin-top:32px}
+.act-sheet .ssec code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line-2);padding:0 5px;border-radius:4px;color:var(--ink)}
+.act-sheet .ssec > p.faint{font-size:13px;margin-top:6px}
+.act-sheet .daylinks{margin-top:6px}
+.act-sheet .daynote + .ssec{padding-top:22px;border-top:1px dashed var(--line)}
+.loggedres{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line-2)}
+.lrhead{font-size:12.5px;font-weight:700;color:var(--ink-3);margin-bottom:4px}
+.acts .act[data-action]{cursor:pointer}
+.acts .act .alead b{font-weight:600;color:var(--ink-2)}
+.worked{margin-top:18px;padding:10px 14px 11px;border-radius:8px;background:var(--surface-2);border-left:3px solid var(--run)}
+.worked .label{font-size:13px;font-weight:700;color:var(--ink-2)}
+.worked ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
+.worked li{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:14.5px}
+.wlink{display:inline-flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;font-family:var(--read);font-weight:600}
+.wlink:hover{color:var(--accent)}
+.worked li .faint{font-size:12.5px}
+.calside .day .dot.actd{background:var(--run)}
+@media (max-width:760px){
+  .plantab{overflow:visible}
+  .act-sheet{margin-bottom:12px}
+  .act-sheet .sheetmeta .ofn{display:none}
+}
+
 /* ---------- gate ---------- */
 .gate{margin:12vh auto 40px;max-width:400px;padding:30px 30px 26px;gap:14px}
 .gatebrand{display:flex;align-items:center;gap:12px}
@@ -1062,7 +1095,7 @@ let pendingRender = false;
 let REFS = [];
 const mst = { arch: {sel:null, open:null, part:null, psel:null}, train: {sel:null, open:null, part:null, psel:null} };
 
-const TODAY = new Date().toISOString().slice(0,10);
+const TODAY = (t => t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'))(new Date());
 try { const v = localStorage.getItem('rb.view'); if (['plan','artifacts','logs'].includes(v)) view = v; } catch(e){}
 
 // ---------- helpers ----------
@@ -1307,7 +1340,8 @@ function chip(id){
 const pill = (s) => `<span class="pill ${esc(slug(s))}">${esc(s)}</span>`;
 
 function render(force){
-  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit)){ pendingRender = true; return; }
+  if (actEd) actCapture();
+  if (!force && (modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit || actEd)){ pendingRender = true; return; }
   pendingRender = false;
   REFS = buildRefs();
   selNeighbors = selected && state ? neighbors(selected) : new Set();
@@ -1486,7 +1520,7 @@ function addFormHtml(){
     const a = addForm.id ? find(state.activities, addForm.id) : null;
     const fixedStage = a ? null : addForm.stage;
     const stageSel = fixedStage ? '' : `<label class="field"><span>Stage</span><select name="stage">${state.stages.map(s => `<option value="${esc(s.id)}" ${(a ? a.stage : pst.stage) === s.id ? 'selected' : ''}>${esc(s.id)} · ${esc(s.name)}</option>`).join('')}</select></label>`;
-    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}" data-stage="${esc(fixedStage || '')}"><h4>${a ? 'Rename ' + esc(a.id) : 'New activity' + (fixedStage ? ' in ' + esc(fixedStage) : '')}</h4>${stageSel}<div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(a && a.name)}" placeholder="What you will actually do"></label><label class="field"><span>Short label for the Activities list</span><input type="text" name="short" value="${val(a && a.short)}" placeholder="optional"></label></div><div class="tools"><button type="submit" class="btn small primary">${a ? 'Save' : 'Add activity'}</button>${cancel}</div></form>`;
+    return `<form class="addform" id="addform" data-kind="${addForm.kind}" data-id="${val(addForm.id)}" data-stage="${esc(fixedStage || '')}"><h4>${a ? 'Rename or move ' + esc(a.id) : 'New activity' + (fixedStage ? ' in ' + esc(fixedStage) : '')}</h4>${stageSel}<div class="row"><label class="field"><span>Name</span><input type="text" name="name" required value="${val(a && a.name)}" placeholder="What you will actually do"></label><label class="field"><span>Short label for the Activities list</span><input type="text" name="short" value="${val(a && a.short)}" placeholder="optional"></label></div><div class="tools"><button type="submit" class="btn small primary">${a ? 'Save' : 'Add activity'}</button>${cancel}</div></form>`;
   }
   return '';
 }
@@ -1567,31 +1601,148 @@ function planLead(p){
   if (/^\s*([-*+]|\d+[.)])\s|^\s*#|^\s*\||^\s*>|^```/.test(line)) return '';
   const t = mdPlain(line).trim(); return t.length > 140 ? t.slice(0, 137).replace(/\s+\S*$/, '') + '…' : t;
 }
-function actItem(a, st){
-  const open = pst.act === a.id;
-  const qs = (state.questions || []).filter(q => q.activity === a.id); const openQs = qs.filter(q => q.status !== 'answered');
-  const days = daysLinking(a.id); const results = state.log.filter(l => l.kind === 'result' && l.reportsOn === a.id);
-  const counts = []; if (openQs.length) counts.push(openQs.length + (openQs.length === 1 ? ' open question' : ' open questions')); if (days.length) counts.push('in ' + days.length + (days.length === 1 ? ' day' : ' days') + ' of the log'); if (results.length) counts.push(results.length + (results.length === 1 ? ' result' : ' results'));
-  const lead = planLead(a.plan);
-  const head = `<div class="ahead" data-action="act-toggle" data-id="${esc(a.id)}" role="button" tabindex="0" aria-expanded="${open}"><span class="anum">${esc(a.id)}</span><span class="aname">${esc(a.name)}</span>${cpillOf(a.id)}${pill(a.status)}</div>`;
-  const sub = (lead ? [esc(lead)] : a.plan ? [] : ['No plan yet']).concat(counts.map(c => `<span class="acount">${esc(c)}</span>`)).join(' · ');
-  if (!open) return `<li class="act st-${esc(a.status)}" id="act-${esc(a.id)}">${head}${sub ? `<div class="asub">${sub}</div>` : ''}</li>`;
-  const i = state.activities.filter(x => x.stage === a.stage).findIndex(x => x.id === a.id), n = state.activities.filter(x => x.stage === a.stage).length;
-  return `<li class="act open st-${esc(a.status)}" id="act-${esc(a.id)}">${head}
-    <div class="abody">
-      <div class="dsec-head"><span class="label">Plan</span>${editLink('activity', a.id, 'plan', a.plan)}</div>
-      ${mdField('activity', a.id, 'plan', a.plan, {empty: 'Write the plan', ph: 'What you will do. A list works well; Markdown works here.', min: 150})}
-      <div class="asec"><div class="dsec-head"><span class="label">Questions</span><button class="link" data-action="q-new" data-id="${esc(st.id)}" data-act="${esc(a.id)}">+ Add</button></div>
-        ${isEditing('q-new', st.id) && stEdit.act === a.id ? qForm(null, st, a.id) : ''}
-        ${qs.length ? `<ul class="aqs">${qs.map(q => `<li class="${q.status === 'answered' ? 'done' : ''}"><span class="qdot"></span><button class="link qlink" data-action="goto-q" data-id="${esc(q.id)}">${esc(mdPlain(q.text))}</button>${q.status === 'answered' ? ' <span class="faint">answered</span>' : ''}</li>`).join('')}</ul>` : `<p class="faint">None yet.</p>`}</div>
-      <div class="asec"><div class="dsec-head"><span class="label">In the log</span></div>
-        ${days.length ? `<div class="daylinks">${days.map(d => `<button class="daylink" data-action="goto-log-day" data-day="${d}">${esc(dayShort(d))}${d.slice(0, 4) !== TODAY.slice(0, 4) ? ', ' + d.slice(0, 4) : ''}</button>`).join('')}</div>` : ''}
-        <p class="faint">${days.length ? 'Days whose page mentions' : 'No days yet. Write'} <code>#${esc(a.id)}</code>${days.length ? '.' : ' in a day’s goals, notes or review to list that day here.'}</p>
-        ${results.length ? `<ul class="aresults">${results.map(l => `<li><span class="rdate">${esc(fmt(l.date))}</span>${md(l.text)}</li>`).join('')}</ul>` : ''}</div>
-      <div class="atools"><label class="stlabel">Status ${statusSelect('activity', a.id, a.status, STATUS_ACT)}</label><button class="btn small" data-action="new-log" data-kind="result" data-activity="${esc(a.id)}">Log a result</button><button class="btn small" data-action="edit-form" data-kind="activity" data-id="${esc(a.id)}">Rename</button><button class="link dim" data-action="act-move" data-id="${esc(a.id)}" data-dir="-1" ${i <= 0 ? 'disabled' : ''}>Move up</button><button class="link dim" data-action="act-move" data-id="${esc(a.id)}" data-dir="1" ${i >= n - 1 ? 'disabled' : ''}>Move down</button><span class="spacer"></span>${linkRemove('activity', a.id, 'Remove', 'Remove ' + a.id + '? Its questions stay with the stage; logged results stay in the log.')}</div>
-      ${addForm && addForm.kind === 'edit-activity' && addForm.id === a.id ? addFormHtml() : ''}
-      ${cmts(a.id)}
-    </div></li>`;
+// ----- activities as logs: each activity has its own page with Plan, Notes, Results and Lessons -----
+const ACT_DOCS = [
+  {k:'plan',    title:'Plan',    min:140, add:'Write the plan',        ph:'What you will do and how. A list works well.'},
+  {k:'notes',   title:'Notes',   min:320, add:'Start today’s notes',   ph:'Write as you work: what you ran, with which settings, what happened.'},
+  {k:'results', title:'Results', min:150, add:'Add results',           ph:'Findings: numbers, tables, plots. Paste a table or drop an image.'},
+  {k:'lessons', title:'Lessons', min:110, add:'Add lessons',           ph:'What you would tell yourself, or anyone, before doing this again.'},
+];
+const ACT_DOC_KEYS = ACT_DOCS.map(x => x.k);
+let actEd = null;            // the activity being edited: {id, secs: Set, draft: {section: text}, orig, saved}
+let actDraftTimer = null, lastActTA = null;
+const actTAs = () => Array.from(document.querySelectorAll('textarea.actta[data-act]'));
+const isActTA = el => !!(el && el.classList && el.classList.contains('actta'));
+function setActDoc(a, k, v, worked){
+  a[k] = v; a.stamps = a.stamps || {}; a.stamps[k] = stampNow();
+  if (worked){ a.worked = a.worked || {}; const s = new Set(a.worked[TODAY] || []); s.add(k); a.worked[TODAY] = ACT_DOC_KEYS.filter(x => s.has(x)); }
+}
+function actCapture(){ if (!actEd) return; for (const t of actTAs()) if (t.dataset.act === actEd.id) actEd.draft[t.dataset.asec] = t.value; }
+function actFlush(){
+  if (!actEd) return false; actCapture();
+  const a = find(state.activities, actEd.id); if (!a) return false;
+  let changed = false;
+  for (const k of Object.keys(actEd.draft)){ const v = String(actEd.draft[k]).replace(/^\s*\n/, '').replace(/\s+$/, ''); if (v !== (a[k] || '')){ setActDoc(a, k, v, true); changed = true; } }
+  if (!changed) return false;
+  actEd.saved = true; clearTimeout(actDraftTimer); actStatus(''); commit(); return true;
+}
+function actStatus(msg){ const el = document.getElementById('actstatus'); if (el) el.textContent = msg; }
+function actExit(){ clearTimeout(actDraftTimer); if (!actEd) return false; const ch = actFlush(); actEd = null; return ch; }
+function flushAll(){ let ch = false; if (noteFlush()) ch = true; if (actFlush()) ch = true; return ch; }
+function leaveEditors(){
+  noteExit(); logEditFlush(); actExit();
+  if (stEdit && stEdit.kind === 'field') saveField(); else stEdit = null;
+  addForm = null; removing = null; importPending = null; outlineEditing = null;
+}
+function actStart(k){
+  const a = find(state.activities, pst.act); if (!a) return null;
+  if (actEd && actEd.id !== a.id) actExit();
+  if (!actEd) actEd = {id: a.id, secs: new Set(), draft: {}, saved: false, orig: {docs: Object.fromEntries(ACT_DOC_KEYS.map(x => [x, a[x] || ''])), worked: JSON.parse(JSON.stringify(a.worked || {}))}};
+  actEd.secs.add(k); addForm = null; removing = null;
+  renderActPage();
+  return document.querySelector(`textarea.actta[data-asec="${k}"]`);
+}
+function actCancel(){
+  clearTimeout(actDraftTimer); if (!actEd) return;
+  const ed = actEd; actEd = null; const a = find(state.activities, ed.id);
+  if (a && ed.saved){ for (const k of ACT_DOC_KEYS) if ((a[k] || '') !== ed.orig.docs[k]) setActDoc(a, k, ed.orig.docs[k], false); a.worked = ed.orig.worked; commit(); toast('Put back.'); }
+  render(true);
+}
+function scrollerOf(el){ for (let p = el.parentElement; p && p !== document.body; p = p.parentElement){ const s = getComputedStyle(p); if (/(auto|scroll)/.test(s.overflowY) && p.scrollHeight > p.clientHeight + 1) return p; } return null; }
+function revealBottom(t){ const sc = scrollerOf(t); const r = t.getBoundingClientRect(); const vb = sc ? sc.getBoundingClientRect().bottom : window.innerHeight; const over = r.bottom - (vb - 96); if (over > 0){ if (sc) sc.scrollTop += over; else window.scrollBy(0, over); } }
+function actAddDate(){
+  let t = document.querySelector('textarea.actta[data-asec="notes"]');
+  if (!t) t = actStart('notes'); if (!t) return;
+  const label = dayShort(TODAY); let v = t.value.replace(/\s+$/, '');
+  const heads = v.match(/^#{1,3}\s+.+$/gm) || []; const last = heads.length ? heads[heads.length - 1].replace(/^#{1,3}\s+/, '').trim() : '';
+  v = last === label ? v + '\n' : (v ? v + '\n\n' : '') + '### ' + label + '\n';
+  t.value = v; t.dispatchEvent(new Event('input', {bubbles: true}));
+  t.focus({preventScroll: true}); t.selectionStart = t.selectionEnd = t.value.length; revealBottom(t);
+}
+function openAct(id){
+  const a = find(state.activities, id); if (!a) return;
+  leaveEditors();
+  view = 'plan'; try { localStorage.setItem('rb.view', view); } catch(e){}
+  sections.roadmap = true; saveSections();
+  pst.stage = a.stage; pst.act = a.id; pst.q = null; selected = a.id;
+  render(true); scrollToEl('panelbox-act', 'start');
+}
+function actBack(){
+  actExit(); stEdit = null; addForm = null; removing = null;
+  pst.act = null; pst.q = null; selected = pst.stage; render(true); scrollToEl('st-activities', 'start');
+}
+const actWorkedDays = a => Object.keys(a.worked || {}).filter(d => (a.worked[d] || []).length).sort();
+function workedMap(){ const m = {}; for (const a of state.activities) for (const d of actWorkedDays(a)) (m[d] = m[d] || []).push(a.id); return m; }
+function workedHtml(d){
+  const ws = state.activities.filter(a => a.worked && (a.worked[d] || []).length); if (!ws.length) return '';
+  return `<div class="worked"><span class="label">Worked on</span><ul>${ws.map(a => `<li><a href="#" class="wlink" data-action="goto-act" data-id="${esc(a.id)}"><span class="anum">${esc(a.id)}</span><span>${esc(a.name)}</span></a><span class="faint">${esc(a.worked[d].join(', '))}</span></li>`).join('')}</ul></div>`;
+}
+function textLead(src){
+  for (const raw of String(src || '').split('\n')){
+    const r = raw.trim(); if (!r || /^#/.test(r) || /^\|/.test(r) || /^\s*:?-{2,}/.test(r) || /^!\[/.test(r) || /^```/.test(r)) continue;
+    const line = mdPlain(r).replace(/^\(?\d+[.)]\s*/, '').trim();
+    if (!line || (line.length <= 24 && /:\s*$/.test(line))) continue;
+    return line.length > 120 ? line.slice(0, 117).replace(/\s+\S*$/, '') + '…' : line;
+  }
+  return '';
+}
+function actRow(a){
+  const openQs = (state.questions || []).filter(q => q.activity === a.id && q.status !== 'answered').length;
+  const days = actWorkedDays(a); const last = days[days.length - 1]; const res = textLead(a.results);
+  const parts = [];
+  if (res) parts.push(`<span class="alead"><b>Results:</b> ${esc(res)}</span>`);
+  else if (!ACT_DOC_KEYS.some(k => a[k])) parts.push('Not started');
+  if (openQs) parts.push(`<span class="acount">${openQs} open ${openQs === 1 ? 'question' : 'questions'}</span>`);
+  if (last) parts.push(`<span class="acount">last written ${esc(fmt(last))}</span>`);
+  return `<li class="act st-${esc(a.status)}" id="act-${esc(a.id)}" data-action="act-open" data-id="${esc(a.id)}" role="button" tabindex="0"><div class="ahead"><span class="anum">${esc(a.id)}</span><span class="aname">${esc(a.name)}</span>${cpillOf(a.id)}${pill(a.status)}</div>${parts.length ? `<div class="asub">${parts.join(' · ')}</div>` : ''}</li>`;
+}
+function loggedResults(a){
+  const rs = state.log.filter(l => l.kind === 'result' && l.reportsOn === a.id); if (!rs.length) return '';
+  return `<div class="loggedres"><div class="lrhead">From the log</div><ul class="aresults">${rs.map(l => `<li><span class="rdate">${esc(fmt(l.date))}</span>${md(l.text)}</li>`).join('')}</ul></div>`;
+}
+const mdHelpHtml = () => `<details class="mdhelp"><summary>Formatting</summary><div class="mdgrid">${MD_HELP.map(([a, b]) => `<code>${esc(a)}</code><span>${esc(b)}</span>`).join('')}</div></details>`;
+function actSheet(){
+  const a = find(state.activities, pst.act); if (!a) return '';
+  const st = find(state.stages, a.stage);
+  const all = state.activities; const i = all.indexOf(a); const prev = all[i - 1], next = all[i + 1];
+  const peers = all.filter(x => x.stage === a.stage); const k = peers.indexOf(a);
+  const days = actWorkedDays(a); const last = days[days.length - 1];
+  const mine = !!(actEd && actEd.id === a.id);
+  const editingAny = mine && actEd.secs.size > 0;
+  const val = d => mine && d.k in actEd.draft ? actEd.draft[d.k] : (a[d.k] || '');
+  const secs = ACT_DOCS.map(d => {
+    const v = val(d); const editing = mine && actEd.secs.has(d.k);
+    const extra = d.k === 'results' ? loggedResults(a) : '';
+    const dateBtn = d.k === 'notes' ? `<button class="link datebtn" data-action="act-date" title="Add today’s date as a heading at the end of the notes">+ Today’s date</button>` : '';
+    if (editing) return `<section class="dsec editing" data-asec="${d.k}"><div class="dsec-head"><span class="label">${d.title}</span>${dateBtn}</div><textarea id="act-${d.k}-ed" class="actta mdta" data-act="${esc(a.id)}" data-asec="${d.k}" data-min="${d.min}" placeholder="${esc(d.ph)}">${esc(v)}</textarea>${extra}</section>`;
+    if (!v) return `<section class="dsec empty" data-asec="${d.k}"><button class="addsec" data-action="${d.k === 'notes' ? 'act-date' : 'act-edit'}" data-sec="${d.k}"><span class="plus">+</span>${d.add}</button>${extra}</section>`;
+    return `<section class="dsec" data-asec="${d.k}"><div class="dsec-head"><span class="label">${d.title}</span><button class="link" data-action="act-edit" data-sec="${d.k}">Edit</button>${dateBtn}</div><div class="notebody">${md(v, 'activity-' + d.k + ':' + a.id)}</div>${extra}</section>`;
+  }).join('');
+  const tools = editingAny ? `<div class="tools daytools"><button class="btn small primary" data-action="act-save" title="Save and keep writing (Ctrl/⌘+S)">Save</button><button class="btn small" data-action="act-done" title="Save and close the editors">Done</button><button class="btn small" data-action="act-cancel" title="Put the activity back the way it was when you started editing">Cancel</button><button type="button" class="btn small" data-action="img-pick" data-for="__act">Attach image</button>${mdHelpHtml()}<span class="notestatus" id="actstatus"></span><span class="faint autosave">Autosaves every 2 min and when you leave the page</span></div>` : '';
+  const qs = (state.questions || []).filter(q => q.activity === a.id);
+  const qOpen = qs.filter(q => q.status !== 'answered'), qDone = qs.filter(q => q.status === 'answered');
+  const qsHtml = `<section class="ssec" id="act-qs"><div class="dsec-head"><span class="label">Questions</span>${qs.length ? `<span class="count">${qOpen.length} open${qDone.length ? ' · ' + qDone.length + ' answered' : ''}</span>` : ''}${st ? `<button class="link" data-action="q-new" data-id="${esc(st.id)}" data-act="${esc(a.id)}">+ Add</button>` : ''}</div>${st && isEditing('q-new', st.id) && stEdit.act === a.id ? qForm(null, st, a.id) : ''}${qs.length ? `<ul class="qs">${qOpen.concat(qDone).map(q => qItem(q, st, true)).join('')}</ul>` : `<p class="faint">None yet.</p>`}</section>`;
+  const mention = daysLinking(a.id); const dayset = Array.from(new Set(days.concat(mention))).sort().reverse();
+  const daysHtml = `<section class="ssec" id="act-days"><div class="dsec-head"><span class="label">Days</span></div>${dayset.length ? `<div class="daylinks">${dayset.map(d => { const w = (a.worked || {})[d] || []; const tip = [w.length ? 'Wrote ' + w.join(', ') : '', mention.includes(d) ? 'the day’s page mentions #' + a.id : ''].filter(Boolean).join('; '); return `<button class="daylink" data-action="goto-log-day" data-day="${d}" title="${esc(tip)}">${esc(dayShort(d))}${d.slice(0, 4) !== TODAY.slice(0, 4) ? ', ' + d.slice(0, 4) : ''}</button>`; }).join('')}</div>` : ''}<p class="faint">${dayset.length ? 'Days you wrote here, and days whose page mentions' : 'Days you write here are listed here and marked on the Logs calendar, and so are days whose page mentions'} <code>#${esc(a.id)}</code>.</p></section>`;
+  return `<article class="sheet act-sheet" id="panelbox-act" data-act="${esc(a.id)}">
+    <header class="sheethead">
+      <div class="sheetmeta"><span class="pageno">${esc(a.id)}</span>${st ? `<button class="link" data-action="act-back" title="Back to the ${esc(st.id)} page">‹ ${esc(st.id)} ${esc(shortOf(st, 32))}</button>` : ''}<span class="ofn">${k + 1} of ${peers.length} in ${esc(a.stage)}</span>${last ? `<span class="edited">last written ${esc(fmt(last))}</span>` : ''}</div>
+      <div class="daynav"><button class="navbtn" data-action="act-step" data-dir="-1" ${prev ? `title="${esc(prev.id + ' · ' + prev.name)}"` : 'disabled'} aria-label="Previous activity">‹</button><button class="navbtn" data-action="act-step" data-dir="1" ${next ? `title="${esc(next.id + ' · ' + next.name)}"` : 'disabled'} aria-label="Next activity">›</button><button class="navbtn" data-action="act-back" title="Back to ${esc(st ? st.id : 'the stage')}" aria-label="Close">×</button></div>
+      <h2 class="sttitle"><span>${esc(a.name)}</span>${statusSelect('activity', a.id, a.status, STATUS_ACT)}</h2>
+    </header>
+    ${addForm && addForm.kind === 'edit-activity' && addForm.id === a.id ? addFormHtml() : ''}
+    <div class="daynote">${secs}${tools}</div>
+    ${qsHtml}
+    ${daysHtml}
+    <div class="inside">${cmts(a.id)}</div>
+    <footer class="stfoot"><button class="btn small" data-action="edit-form" data-kind="activity" data-id="${esc(a.id)}">Rename or move</button><button class="btn small" data-action="act-move" data-id="${esc(a.id)}" data-dir="-1" ${k <= 0 ? 'disabled' : ''}>Move earlier</button><button class="btn small" data-action="act-move" data-id="${esc(a.id)}" data-dir="1" ${k >= peers.length - 1 ? 'disabled' : ''}>Move later</button><span class="spacer"></span>${removeControls('activity', a.id, 'Remove ' + a.id + ' and everything written in it? Its questions stay with the stage.')}</footer>
+  </article>`;
+}
+function mountAct(h){ if (!h) return; typeset(h); h.querySelectorAll('textarea.actta, textarea.mdta').forEach(autoGrow); applyHighlights(h); }
+function renderActPage(){
+  actCapture();
+  const h = document.getElementById('panel-act'); if (!h){ render(true); return; }
+  h.innerHTML = actSheet(); mountAct(h); applySelection();
 }
 function actOptions(st, cur){ return `<option value="">the stage as a whole</option>` + state.activities.filter(a => a.stage === st.id).map(a => `<option value="${esc(a.id)}" ${cur === a.id ? 'selected' : ''}>${esc(a.id)} · ${esc(a.short || a.name)}</option>`).join(''); }
 function qForm(q, st, act){
@@ -1600,13 +1751,13 @@ function qForm(q, st, act){
     <div class="row"><label class="field"><span>Belongs to</span><select id="qact">${actOptions(st, q ? q.activity : act)}</select></label>${q ? `<label class="field"><span>Status</span><select id="qstatus"><option value="open" ${q.status !== 'answered' ? 'selected' : ''}>open</option><option value="answered" ${q.status === 'answered' ? 'selected' : ''}>answered</option></select></label>` : ''}</div>
     <div class="terow"><button class="btn small primary" data-primary data-action="${q ? 'q-save' : 'q-add'}" data-id="${esc(q ? q.id : st.id)}">${q ? 'Save' : 'Add question'}</button><button class="btn small" data-action="st-cancel">Cancel</button><span class="spacer"></span>${q ? linkRemove('question', q.id, 'Remove question', 'Remove this question?') : ''}</div></div>`;
 }
-function qItem(q, st){
+function qItem(q, st, onAct){
   if (isEditing('q-edit', q.id)) return `<li class="q editing" id="q-${esc(q.id)}">${qForm(q, st)}</li>`;
   const a = q.activity ? find(state.activities, q.activity) : null; const done = q.status === 'answered';
   const nC = typeof commentsOf === 'function' ? commentsOf(q.id).length : 0; const showC = pst.q === q.id;
   return `<li class="q${done ? ' answered' : ''}" id="q-${esc(q.id)}"><button class="qmark" data-action="q-toggle" data-id="${esc(q.id)}" title="${done ? 'Answered. Click to reopen.' : 'Open. Click to mark answered.'}" aria-label="${done ? 'Reopen' : 'Mark answered'}">${done ? '✓' : ''}</button>
     <div class="qbody"><div class="qt">${mdInline(q.text)}</div>
-      ${a || q.note ? `<div class="qm">${a ? `<button class="qtag" data-action="goto-act" data-id="${esc(a.id)}" title="${esc(a.name)}">${esc(a.id)}</button>` : ''}${q.note ? md(q.note, 'question-note:' + q.id) : ''}</div>` : ''}
+      ${(a && !onAct) || q.note ? `<div class="qm">${a && !onAct ? `<button class="qtag" data-action="goto-act" data-id="${esc(a.id)}" title="${esc(a.name)}">${esc(a.id)}</button>` : ''}${q.note ? md(q.note, 'question-note:' + q.id) : ''}</div>` : ''}
       <div class="qtools"><button class="link dim" data-action="q-edit" data-id="${esc(q.id)}">Edit</button><button class="link dim" data-action="q-cmts" data-id="${esc(q.id)}">${showC ? 'Hide comments' : nC ? nC + (nC === 1 ? ' comment' : ' comments') : 'Comment'}</button>${cpillOf(q.id)}</div>
       ${showC ? cmts(q.id) : ''}</div></li>`;
 }
@@ -1634,7 +1785,7 @@ function stageSheet(){
     ${sec('goal', 'Goal', editLink('stage', st.id, 'goal', st.goal), mdField('stage', st.id, 'goal', st.goal, {empty: 'Write the goal', ph: 'What this stage has to show.', cls: 'crit'}))}
     ${sec('criteria', 'Success criteria', editLink('stage', st.id, 'criteria', st.criteria), mdField('stage', st.id, 'criteria', st.criteria, {empty: 'Write the success criteria', ph: 'What has to be true for this stage to be done. If it comes down to a set of checks, add them below as tasks.', cls: 'crit'}) + tasksHtml(st))}
     ${sec('activities', 'Activities', `${as.length ? `<span class="count">${as.length}</span>` : ''}<button class="link" data-action="add-form" data-kind="activity" data-stage="${esc(st.id)}">+ Add</button>`,
-      `${addForm && addForm.kind === 'activity' && addForm.stage === st.id ? addFormHtml() : ''}${as.length ? `<ol class="acts">${as.map(a => actItem(a, st)).join('')}</ol>` : `<p class="faint">No activities yet.</p>`}`)}
+      `${addForm && addForm.kind === 'activity' && addForm.stage === st.id ? addFormHtml() : ''}${as.length ? `<ol class="acts">${as.map(a => actRow(a)).join('')}</ol>` : `<p class="faint">No activities yet.</p>`}`)}
     ${sec('questions', 'Open questions', `${qs.length ? `<span class="count">${qOpen.length} open${qDone.length ? ' · ' + qDone.length + ' answered' : ''}</span>` : ''}<button class="link" data-action="q-new" data-id="${esc(st.id)}">+ Add</button>`,
       `${isEditing('q-new', st.id) && !stEdit.act ? qForm(null, st, null) : ''}${qs.length ? `<ul class="qs">${qOpen.concat(qDone).map(q => qItem(q, st)).join('')}</ul>` : `<p class="faint">None yet. A question can belong to the stage or to one of its activities.</p>`}`)}
     ${sec('threads', 'Loose threads', `${ths.length ? `<span class="count">${ths.length}</span>` : ''}<button class="link" data-action="th-new" data-id="${esc(st.id)}">+ Add</button>`,
@@ -1649,7 +1800,7 @@ function activitiesBody(){
     const as = state.activities.filter(a => a.status === k); if (!as.length) return '';
     return `<div class="actgroup"><h4>${label} <span class="faint">${as.length}</span></h4><div class="actgrid">${as.map(a => actCard(a)).join('')}</div></div>`;
   }).join('');
-  return `<p class="faint secnote">Every stage’s activities in one place. Click one to open it on its stage.</p><div class="actgroups">${groups || '<p class="faint">No activities yet.</p>'}</div><div class="tools" style="margin-top:12px"><button class="btn small" data-action="add-form" data-kind="activity">+ Add an activity</button></div>${addForm && addForm.kind === 'activity' && !addForm.stage ? addFormHtml() : ''}`;
+  return `<p class="faint secnote">Every stage’s activities in one place. Click one to open it.</p><div class="actgroups">${groups || '<p class="faint">No activities yet.</p>'}</div><div class="tools" style="margin-top:12px"><button class="btn small" data-action="add-form" data-kind="activity">+ Add an activity</button></div>${addForm && addForm.kind === 'activity' && !addForm.stage ? addFormHtml() : ''}`;
 }
 function sectionHtml(id, title, body){
   const open = sections[id] !== false;
@@ -1658,21 +1809,23 @@ function sectionHtml(id, title, body){
 function renderPlan(){
   if (pst.stage === undefined){ const a = state.stages.find(s => s.status === 'active'); pst.stage = a ? a.id : null; }
   if (pst.stage && !find(state.stages, pst.stage)) pst.stage = null;
+  if (pst.act){ const a0 = find(state.activities, pst.act); if (!a0) pst.act = null; else pst.stage = a0.stage; }
   const vision = `<div class="mapscroll tight" id="svg-vision">${visionSvg()}</div>${visionDeep()}`;
   const road = `<div class="mapscroll" id="svg-route">${roadSvg()}</div>${addForm && addForm.kind === 'stage' ? addFormHtml() : ''}${pst.stage ? '' : `<p class="faint secnote">Click a stage to open its page.</p>`}`;
   return `<div class="plantab"><div class="routemain">
     ${sectionHtml('vision', 'Vision', vision)}
     ${sectionHtml('roadmap', 'Road map', road)}
-    ${pst.stage && sections.roadmap !== false ? stageSheet() : ''}
+    ${pst.stage && sections.roadmap !== false ? (pst.act && find(state.activities, pst.act) ? `<div id="panel-act">${actSheet()}</div>` : stageSheet()) : ''}
     ${sectionHtml('activities', 'All activities', activitiesBody())}
   </div></div>`;
 }
-function mountRoute(){ applySelection(); const s = document.getElementById('panelbox-route'); if (s){ typeset(s); s.querySelectorAll('textarea.mdta').forEach(autoGrow); } }
+function mountRoute(){ applySelection(); const s = document.getElementById('panelbox-route'); if (s){ typeset(s); s.querySelectorAll('textarea.mdta').forEach(autoGrow); } mountAct(document.getElementById('panel-act')); }
 function scrollToEl(id, block){ setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({block: block || 'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 40); }
 function togglePlan(kind, id){
-  outlineEditing = null; addForm = null; removing = null; stEdit = null;
+  if (kind === 'goact'){ openAct(id); return; }
+  actExit(); outlineEditing = null; addForm = null; removing = null; stEdit = null;
   if (kind === 'vpart'){ pst.vpart = (pst.vpart === id) ? null : id; }
-  else if (kind === 'stage'){ if (pst.stage !== id){ pst.stage = id; pst.act = null; pst.q = null; } }   // clicking a stage always shows its page; × or Esc closes it
+  else if (kind === 'stage'){ if (pst.stage !== id || pst.act){ pst.stage = id; pst.act = null; pst.q = null; } }   // clicking a stage always shows its page; × or Esc closes it
   else if (kind === 'goact'){ const a = find(state.activities, id); if (a){ sections.roadmap = true; saveSections(); pst.stage = a.stage; pst.act = id; } }
   selected = pst.act || pst.stage || pst.vpart || null;
   render();
@@ -1736,6 +1889,7 @@ function removeNode(kind, id){
   } else if (kind === 'activity'){
     for (const q of (state.questions || [])) if (q.activity === id){ q.activity = null; q.updated = now; }
     state.activities = state.activities.filter(a => a.id !== id); tombstone([id]);
+    if (actEd && actEd.id === id){ clearTimeout(actDraftTimer); actEd = null; }
     if (pst.act === id) pst.act = null;
   } else if (kind === 'task' || kind === 'question' || kind === 'thread'){
     const k = kind === 'task' ? 'tasks' : kind === 'question' ? 'questions' : 'threads';
@@ -1766,7 +1920,7 @@ function submitAddForm(f){
     const a = {id: nextActId(), stage, name, status: 'planned', plan: '', uses: [], updated: now};
     const sh = f.short.value.trim(); if (sh) a.short = sh;
     state.activities.push(a); addForm = null; sections.roadmap = true; pst.stage = stage; pst.act = a.id;
-    selected = a.id; commit(); toast(a.id + ' added.'); scrollToEl('act-' + a.id, 'center'); return;
+    selected = a.id; commit(); toast(a.id + ' added.'); scrollToEl('panelbox-act', 'start'); return;
   }
 }
 // the one open editor on the stage page saves through here
@@ -1809,7 +1963,7 @@ function promoteThread(id, to){
   if (to === 'activity'){
     const a = {id: nextActId(), stage: h.stage, name: first.length > 90 ? first.slice(0, 87) + '…' : first, status: 'planned', plan: first.length > 90 ? h.text : rest, uses: [], updated: now};
     state.activities.push(a); pst.act = a.id; toast('Now ' + a.id + '.');
-    state.threads = state.threads.filter(x => x.id !== id); tombstone([id]); commit(); scrollToEl('act-' + a.id, 'center');
+    state.threads = state.threads.filter(x => x.id !== id); tombstone([id]); commit(); scrollToEl('panelbox-act', 'start');
   } else {
     const q = {id: uid('Q'), stage: h.stage, activity: null, text: first, note: rest, status: 'open', updated: now};
     state.questions.push(q); toast('Now an open question.');
@@ -1823,7 +1977,7 @@ function outlineToText(v){ if (typeof v === 'string') return v; if (!Array.isArr
 function migrateState(s){
   if (!s || typeof s !== 'object') return false;
   for (const k of ['tasks', 'questions', 'threads', 'removedIds', 'activities', 'stages', 'artifacts', 'log']) if (!Array.isArray(s[k])) s[k] = [];
-  if ((s.schema || 1) >= 2) return false;
+  if ((s.schema || 1) >= 2){ normActs(s); return false; }
   for (const st of s.stages){ st.goal = outlineToText(st.goal); for (const k of ['criteria', 'judged', 'taskCol']) if (typeof st[k] !== 'string') st[k] = ''; }
   const qid = u => 'Q' + String(u).replace(/^U/, '');
   for (const u of (s.unknowns || [])){
@@ -1837,7 +1991,15 @@ function migrateState(s){
   if (s.comments) for (const k of Object.keys(s.comments)) if (/^U\d+$/.test(k)){ const nk = qid(k); s.comments[nk] = (s.comments[nk] || []).concat(s.comments[k]); delete s.comments[k]; }
   delete s.unknowns;
   s.schema = 2;
+  normActs(s);
   return true;
+}
+function normActs(s){
+  for (const a of s.activities){
+    for (const k of ['plan', 'notes', 'results', 'lessons']) if (typeof a[k] !== 'string') a[k] = '';
+    if (!a.worked || typeof a.worked !== 'object' || Array.isArray(a.worked)) a.worked = {};
+    if (!a.stamps || typeof a.stamps !== 'object' || Array.isArray(a.stamps)) a.stamps = {};
+  }
 }
 // ---------- import a prepared stage (a .json file) ----------
 function importSummary(d){
@@ -1868,6 +2030,7 @@ function applyImport(sid, d){
     if (!x){ x = {id: nextActId(), stage: sid, name: 'Activity', status: 'planned', plan: '', uses: []}; state.activities.push(x); }
     const old = String(x.plan || '').trim();
     for (const k of ['name', 'short', 'plan']) if (typeof a[k] === 'string') x[k] = a[k];
+    if (typeof a.plan === 'string'){ x.stamps = x.stamps || {}; x.stamps.plan = now; }
     if (d.keepOldPlans && a.match && old && typeof a.plan === 'string' && !a.plan.includes(old)) x.plan = a.plan.replace(/\s+$/, '') + '\n\nEarlier goals:\n' + old;
     if (STATUS_ACT.includes(a.status)) x.status = a.status;
     x.stage = sid; x.updated = now; listed.push(x);
@@ -1979,13 +2142,13 @@ function pageSummary(n){
 }
 
 function calendarHtml(){
-  const cells = monthCells(cal.ym); const notes = notesOf();
+  const cells = monthCells(cal.ym); const notes = notesOf(); const wmap = workedMap();
   const grid = cells.map(d => {
     if (!d) return `<div class="day blank"></div>`;
     const note = notes[d]; const es = dayEntries(d); const hasNote = noteHas(note);
     const ex = hasNote ? pageSummary(note) : '';
-    const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (typeof openCommentsFor === 'function' && openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '');
-    return `<div class="day node${d === TODAY ? ' today' : ''}${hasNote ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" title="${esc(longDate(d))}${ex ? ' — ' + esc(ex) : ''}" aria-label="${esc(longDate(d))}${hasNote ? ', has a page' : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
+    const dots = es.map(l => `<i class="dot ${esc(l.kind)}" title="${esc(l.kind)}"></i>`).join('') + (typeof openCommentsFor === 'function' && openCommentsFor('day:' + d).length ? '<i class="dot cdot" title="comments"></i>' : '') + (wmap[d] ? `<i class="dot actd" title="worked on ${esc(wmap[d].join(', '))}"></i>` : '');
+    return `<div class="day node${d === TODAY ? ' today' : ''}${hasNote ? ' has-note' : ''}${d > TODAY ? ' future' : ''}${cal.open === d ? ' sel' : ''}" data-day="${d}" tabindex="0" role="button" title="${esc(longDate(d))}${ex ? ' — ' + esc(ex) : ''}${wmap[d] ? ' · worked on ' + esc(wmap[d].join(', ')) : ''}" aria-label="${esc(longDate(d))}${hasNote ? ', has a page' : ''}${wmap[d] ? ', worked on ' + esc(wmap[d].join(', ')) : ''}. Click to open."><span class="dn">${Number(d.slice(8))}</span>${dots ? `<span class="dots">${dots}</span>` : ''}</div>`;
   }).join('');
   const pages = pagesAll();
   const recent = pages.slice(-6).reverse();
@@ -2076,6 +2239,7 @@ function renderDayPanel(){
       <div class="daynav"><button class="navbtn" data-action="day-prev" title="Previous day" aria-label="Previous day">‹</button>${d === TODAY ? '' : `<button class="btn small ghost" data-action="cal-today">Today</button>`}<button class="navbtn" data-action="day-next" title="Next day" aria-label="Next day">›</button></div>
       <h2 class="sheetdate">${esc(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dowOf(d)])}, ${esc(MONTHS_LONG[mm - 1])} ${dd}<span class="yr">${yy}</span>${d === TODAY ? '<span class="todaytag">Today</span>' : ''}</h2>
     </header>
+    ${workedHtml(d)}
     <div class="daynote">${secs}${tools}</div>
     ${plan}
     <div class="inside">${typeof commentsBlock === 'function' ? commentsBlock('day:' + d) : ''}</div>
@@ -2128,15 +2292,15 @@ function gotoNode(id){
   selected = id;
   if (n.kind === 'ref'){ openModelAt(id); return; }
   if (n.kind === 'log'){ view = 'logs'; cal.ym = n.date.slice(0,7); cal.open = n.date; cal.sel = n.date; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.querySelector('#panel-logs .entry.sel'); if (el) el.scrollIntoView({block:'center'}); }, 60); return; }
-  if (view === 'logs'){ noteExit(); logEditFlush(); }
-  view = 'plan'; stEdit = null; addForm = null; removing = null;
+  leaveEditors();
+  view = 'plan';
   let target = 'panelbox-route', block = 'start';
   if (n.kind === 'vision'){ sections.vision = true; target = 'sec-vision'; }
   else if (n.kind === 'stage'){ sections.roadmap = true; pst.stage = id; pst.act = null; }
-  else if (n.kind === 'activity'){ sections.roadmap = true; pst.stage = n.stage; pst.act = id; target = 'act-' + id; }
-  else if (n.kind === 'question'){ sections.roadmap = true; pst.stage = n.stage; target = 'q-' + id; block = 'center'; }
-  else if (n.kind === 'task'){ sections.roadmap = true; pst.stage = n.stage; target = 'task-' + id; block = 'center'; }
-  else if (n.kind === 'thread'){ sections.roadmap = true; pst.stage = n.stage; target = 'th-' + id; block = 'center'; }
+  else if (n.kind === 'activity'){ sections.roadmap = true; pst.stage = n.stage; pst.act = id; target = 'panelbox-act'; }
+  else if (n.kind === 'question'){ sections.roadmap = true; pst.stage = n.stage; pst.act = null; target = 'q-' + id; block = 'center'; }
+  else if (n.kind === 'task'){ sections.roadmap = true; pst.stage = n.stage; pst.act = null; target = 'task-' + id; block = 'center'; }
+  else if (n.kind === 'thread'){ sections.roadmap = true; pst.stage = n.stage; pst.act = null; target = 'th-' + id; block = 'center'; }
   else if (n.kind === 'artifact'){ view = 'artifacts'; ast.open = id; ast.sel = id; target = 'panelbox-artifacts'; }
   try { localStorage.setItem('rb.view', view); } catch(e){}
   render();
@@ -2576,11 +2740,19 @@ function setSync(kind, text){ saveState.kind = kind; saveState.text = text; cons
 async function commit(){ dirty = true; render(); scheduleSave(); }
 function scheduleSave(){ clearTimeout(saveTimer); setSync('saving', 'Saving…'); saveTimer = setTimeout(doSave, 500); }
 // lists of items with ids: union by id, the newer 'updated' wins, removed ids stay removed
-function mergeList(r, l, gone, stages){
+function mergeList(r, l, gone, stages, merger){
   const byId = new Map(), order = [];
   for (const x of (l || [])){ byId.set(x.id, x); order.push(x.id); }
-  for (const x of (r || [])){ const p = byId.get(x.id); if (!p){ byId.set(x.id, x); order.push(x.id); } else if (String(x.updated || '') > String(p.updated || '')) byId.set(x.id, x); }
+  for (const x of (r || [])){ const p = byId.get(x.id); if (!p){ byId.set(x.id, x); order.push(x.id); } else if (merger) byId.set(x.id, merger(x, p)); else if (String(x.updated || '') > String(p.updated || '')) byId.set(x.id, x); }
   return order.filter(id => !gone.has(id)).map(id => byId.get(id)).filter(x => !stages || !x.stage || stages.has(x.stage));
+}
+// an activity merges section by section: two people writing in different sections both keep their text
+function mergeAct(r, l){
+  const out = Object.assign({}, String(r.updated || '') > String(l.updated || '') ? r : l);
+  const rs = r.stamps || {}, ls = l.stamps || {}; out.stamps = {};
+  for (const f of ACT_DOC_KEYS){ const useR = String(rs[f] || '') > String(ls[f] || ''); out[f] = useR ? r[f] : l[f]; const st = useR ? rs[f] : ls[f]; if (st) out.stamps[f] = st; }
+  const w = {}; for (const src of [r.worked || {}, l.worked || {}]) for (const d of Object.keys(src)){ const s0 = new Set((w[d] || []).concat(src[d] || [])); w[d] = ACT_DOC_KEYS.filter(k => s0.has(k)); }
+  out.worked = w; return out;
 }
 function mergeStates(remote, local){
   const out = local;
@@ -2589,7 +2761,7 @@ function mergeStates(remote, local){
   const rs = remote.stages || [], ls = local.stages || [];
   if (rs.length === ls.length && rs.every((x, i) => x.id === ls[i].id)) local.stages = ls.map((x, i) => String(rs[i].updated || '') > String(x.updated || '') ? rs[i] : x);
   const stageIds = new Set(local.stages.map(x => x.id));
-  for (const k of ['activities', 'tasks', 'questions', 'threads']) local[k] = mergeList(remote[k], local[k], gone, stageIds);
+  for (const k of ['activities', 'tasks', 'questions', 'threads']) local[k] = mergeList(remote[k], local[k], gone, stageIds, k === 'activities' ? mergeAct : null);
   const im = new Map(); for (const x of (remote.imports || []).concat(local.imports || [])) im.set(x.hash + '|' + x.stage, x); local.imports = Array.from(im.values());
   const rc = remote.comments || {}, lc = local.comments || {}; const merged = {};
   for (const t of new Set(Object.keys(rc).concat(Object.keys(lc)))){
@@ -2627,7 +2799,7 @@ async function doSave(){
   } finally { saving = false; if (saveQueued){ saveQueued = false; doSave(); } }
 }
 function cmtTyping(){ return Array.prototype.some.call(document.querySelectorAll('.cmtform textarea'), t => t.value.trim()); }
-function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit || importPending || cmtTyping() || isNoteTA(a)); }
+function editorOpen(){ const a = document.activeElement; return !!(modalOpen || editingPart || noteEditing || outlineEditing || addForm || removing || logEditing || stEdit || actEd || importPending || cmtTyping() || isNoteTA(a) || isActTA(a)); }
 async function refreshFromRepo(manual){
   if (dbState !== 'ready' || !token) return;
   if (saving || dirty){ if (manual) toast('There are unsaved changes; save first.'); return; }
@@ -2641,11 +2813,11 @@ async function refreshFromRepo(manual){
 }
 window.addEventListener('focus', () => refreshFromRepo(false));
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden){ if (typeof noteFlush === 'function' && noteFlush()){ clearTimeout(saveTimer); doSave(); } else if (dirty && !saving){ clearTimeout(saveTimer); doSave(); } return; }
+  if (document.hidden){ if (flushAll()){ clearTimeout(saveTimer); doSave(); } else if (dirty && !saving){ clearTimeout(saveTimer); doSave(); } return; }
   refreshFromRepo(false);
 });
 
-window.addEventListener('beforeunload', e => { if (typeof noteFlush === 'function') noteFlush(); if (dirty || uploading){ e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { flushAll(); if (dirty || uploading){ e.preventDefault(); e.returnValue = ''; } });
 async function boot(){
   dbState = 'locked'; render();
   try { const k = await importStoredKey(); if (k){ key = k; dbState = 'loading'; render(); await openWithKey(); } }
@@ -2696,7 +2868,7 @@ function commentsBlock(target){
 }
 function refreshCmts(target){
   document.querySelectorAll('.cmts').forEach(el => { if (el.dataset.target === target) el.outerHTML = commentsBlock(target); });
-  renderDrawer(); updateHeaderCount(); applyHighlights(document.getElementById('panel-logs'));
+  renderDrawer(); updateHeaderCount(); applyHighlights(document.getElementById('panel-logs')); applyHighlights(document.getElementById('panel-act'));
 }
 function updateHeaderCount(){ const b = document.querySelector('.top .cmtbtn'); if (b){ const n = openCommentCount(); b.innerHTML = '<span class="cl">Comments</span>' + (n ? `<span class="cpill">${n}</span>` : ''); } }
 function postComment(f){
@@ -2720,8 +2892,8 @@ function targetLabel(t){
 function gotoTarget(t){
   drawerOpen = false; renderDrawer();
   if (t === 'general'){ drawerOpen = true; renderDrawer(); return; }
-  if (t.startsWith('vision:')){ view = 'plan'; sections.vision = true; pst.vpart = t.slice(7); selected = null; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.getElementById('deep-vision'); if (el) el.scrollIntoView({block:'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 60); return; }
-  if (t.startsWith('day:')){ const d = t.slice(4); view = 'logs'; cal.ym = d.slice(0, 7); cal.open = d; cal.sel = d; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.getElementById('panelbox-logs'); if (el) el.scrollIntoView({block:'start'}); }, 60); return; }
+  if (t.startsWith('vision:')){ leaveEditors(); view = 'plan'; sections.vision = true; pst.vpart = t.slice(7); selected = null; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.getElementById('deep-vision'); if (el) el.scrollIntoView({block:'start', behavior: prefersReduced() ? 'auto' : 'smooth'}); }, 60); return; }
+  if (t.startsWith('day:')){ leaveEditors(); const d = t.slice(4); view = 'logs'; cal.ym = d.slice(0, 7); cal.open = d; cal.sel = d; try { localStorage.setItem('rb.view', view); } catch(e){} render(); setTimeout(() => { const el = document.getElementById('panelbox-logs'); if (el) el.scrollIntoView({block:'start'}); }, 60); return; }
   if (refById(t)){ openModelAt(t); return; }
   if (node(t)) gotoNode(t);
 }
@@ -2759,11 +2931,13 @@ function selectionInfo(box, range){
 function updateSelBtn(){
   const btn = document.getElementById('selbtn'); if (!btn) return;
   const sel = document.getSelection();
-  if (!sel || sel.isCollapsed || !sel.rangeCount || dbState !== 'ready' || view !== 'logs' || !cal.open){ btn.hidden = true; pendingSel = null; return; }
+  const off = () => { btn.hidden = true; pendingSel = null; };
+  if (!sel || sel.isCollapsed || !sel.rangeCount || dbState !== 'ready') return off();
   const range = sel.getRangeAt(0); const node = range.commonAncestorContainer; const el = node.nodeType === 1 ? node : node.parentElement;
-  const box = el && el.closest('#panel-logs .md[data-src]'); if (!box){ btn.hidden = true; pendingSel = null; return; }
-  const info = selectionInfo(box, range); if (!info){ btn.hidden = true; pendingSel = null; return; }
-  pendingSel = {target: 'day:' + cal.open, src: box.dataset.src, quote: info.quote, before: info.before, after: info.after};
+  const box = el && el.closest('#panel-logs .md[data-src], #panel-act .md[data-src]'); if (!box || box.closest('.cmts')) return off();
+  const target = box.closest('#panel-act') ? (view === 'plan' && pst.act ? pst.act : null) : (view === 'logs' && cal.open ? 'day:' + cal.open : null); if (!target) return off();
+  const info = selectionInfo(box, range); if (!info) return off();
+  pendingSel = {target, src: box.dataset.src, quote: info.quote, before: info.before, after: info.after};
   const r = range.getBoundingClientRect();
   btn.style.left = Math.max(8, Math.min(window.innerWidth - 130, r.left + r.width / 2 - 55)) + 'px';
   btn.style.top = Math.max(8, r.top - 38) + 'px';
@@ -2775,7 +2949,7 @@ function startAnchoredComment(){
   const btn = document.getElementById('selbtn'); if (btn) btn.hidden = true;
   const sel = document.getSelection(); if (sel) sel.removeAllRanges();
   refreshCmts(pendingAnchor.target);
-  const form = document.querySelector('#panel-logs .cmtform textarea');
+  const sel2 = '.cmtform[data-target="' + CSS.escape(pendingAnchor.target) + '"] textarea'; const form = document.querySelector('#panel-logs ' + sel2 + ', #panel-act ' + sel2);
   if (form){ form.scrollIntoView({block: 'center', behavior: prefersReduced() ? 'auto' : 'smooth'}); setTimeout(() => form.focus(), 250); }
 }
 function clearHighlights(root){
@@ -2804,16 +2978,17 @@ function markQuote(box, anchor, cid){
 function applyHighlights(root){
   if (!root || !state || dbState !== 'ready') return;
   clearHighlights(root);
-  if (!cal.open) return;
-  const cs = openCommentsFor('day:' + cal.open).filter(c => c.anchor);
+  const target = (root.id === 'panel-act' || root.closest('#panel-act')) ? pst.act : (cal.open ? 'day:' + cal.open : null);
+  if (!target) return;
+  const cs = openCommentsFor(target).filter(c => c.anchor);
   root.querySelectorAll('.md[data-src]').forEach(box => { for (const c of cs) if (c.anchor.src === box.dataset.src) markQuote(box, c.anchor, c.id); });
 }
 function flash(el){ if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); el.scrollIntoView({block: 'center', behavior: prefersReduced() ? 'auto' : 'smooth'}); }
 function showComment(cid){ const el = document.querySelector('#panel-logs .cmt[data-cid="' + CSS.escape(cid) + '"]') || document.querySelector('.cmt[data-cid="' + CSS.escape(cid) + '"]'); flash(el); }
 function showAnchor(target, cid){
-  const find = () => document.querySelector('#panel-logs mark.hl[data-cid="' + CSS.escape(cid) + '"]');
+  const find = () => document.querySelector('#panel-logs mark.hl[data-cid="' + CSS.escape(cid) + '"], #panel-act mark.hl[data-cid="' + CSS.escape(cid) + '"]');
   let mk = find(); if (mk){ flash(mk); return; }
-  if (target.startsWith('day:')){ gotoTarget(target); setTimeout(() => { mk = find(); if (mk) flash(mk); else toast('That passage is no longer in the note.'); }, 200); }
+  if (target.startsWith('day:') || (state.activities || []).some(a => a.id === target)){ gotoTarget(target); setTimeout(() => { mk = find(); if (mk) flash(mk); else toast('That passage is no longer there.'); }, 250); }
 }
 document.addEventListener('selectionchange', () => { clearTimeout(selTimer); selTimer = setTimeout(updateSelBtn, 150); });
 document.addEventListener('scroll', () => { const btn = document.getElementById('selbtn'); if (btn && !btn.hidden){ btn.hidden = true; } }, true);
@@ -2857,6 +3032,7 @@ function insertAtCursor(t, text){
   const st0 = t.selectionStart, en0 = t.selectionEnd; const before = t.value.slice(0, st0), after = t.value.slice(en0);
   const pre = before && !before.endsWith('\n') ? '\n' : '', post = after && !after.startsWith('\n') ? '\n' : '';
   const ins = pre + text + post; t.value = before + ins + after; t.selectionStart = t.selectionEnd = st0 + ins.length; t.focus();
+  t.dispatchEvent(new Event('input', {bubbles: true}));
 }
 async function attachImages(files, textarea){
   if (!files || !files.length || !textarea) return;
@@ -2911,7 +3087,7 @@ document.addEventListener('change', e => { if (e.target && e.target.id === 'imgp
 // ---------- events ----------
 let toastTimer = null;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
-function setView(v){ if (view === 'logs'){ noteExit(); logEditFlush(); } view = v; selected = null; editingPart = null; outlineEditing = null; addForm = null; removing = null; ast.sel = null; try { localStorage.setItem('rb.view', v); } catch(e){} render(); }
+function setView(v){ leaveEditors(); view = v; selected = null; editingPart = null; outlineEditing = null; addForm = null; removing = null; ast.sel = null; try { localStorage.setItem('rb.view', v); } catch(e){} render(); }
 function mapKeyOf(el){ const sec = el.closest('.mapsec'); return sec ? sec.id.replace('map-', '') : null; }
 
 document.addEventListener('click', e => {
@@ -2984,7 +3160,7 @@ document.addEventListener('click', e => {
       if (t && tgt){ tgt[0][tgt[1]] = parseOutline(t.value); }
       outlineEditing = null; commit(); return;
     }
-    if (a === 'close-stage'){ pst.stage = null; pst.act = null; pst.q = null; stEdit = null; selected = null; addForm = null; removing = null; render(true); return; }
+    if (a === 'close-stage'){ actExit(); pst.stage = null; pst.act = null; pst.q = null; stEdit = null; selected = null; addForm = null; removing = null; render(true); return; }
     // ----- stage page -----
     if (a === 'goto-stage'){ togglePlan('stage', act.dataset.id); return; }
     if (a === 'field-edit'){ stEdit = {kind: 'field', of: act.dataset.of, id: act.dataset.id, field: act.dataset.field}; addForm = null; removing = null; render(true); const t = $('#fieldedit'); if (t){ autoGrow(t); t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
@@ -2995,9 +3171,17 @@ document.addEventListener('click', e => {
     if (a === 'task-new'){ stEdit = {kind: 'task-new', id: act.dataset.id}; removing = null; render(true); const t = $('#tname'); if (t) t.focus(); return; }
     if (a === 'task-add'){ addTask(act.dataset.id); return; }
     if (a === 'task-move'){ if (moveWithin(state.tasks, act.dataset.id, Number(act.dataset.dir))){ commit(); render(true); } return; }
-    if (a === 'act-toggle'){ const id = act.dataset.id; pst.act = pst.act === id ? null : id; stEdit = null; addForm = null; removing = null; selected = pst.act || pst.stage; render(true); return; }
+    // ----- activity page -----
+    if (a === 'act-open'){ openAct(act.dataset.id); return; }
+    if (a === 'act-back'){ actBack(); return; }
+    if (a === 'act-step'){ const cur = find(state.activities, pst.act); const nx = cur ? state.activities[state.activities.indexOf(cur) + Number(act.dataset.dir)] : null; if (nx) openAct(nx.id); return; }
+    if (a === 'act-edit'){ const k = act.dataset.sec; const t = actStart(k); if (t){ t.focus({preventScroll: true}); t.selectionStart = t.selectionEnd = t.value.length; if (k === 'notes') revealBottom(t); } return; }
+    if (a === 'act-date'){ actAddDate(); return; }
+    if (a === 'act-save'){ clearTimeout(actDraftTimer); const ch = actFlush(); toast(ch ? 'Saved.' : 'Nothing new to save.'); const t = lastActTA && document.getElementById(lastActTA); if (t) t.focus({preventScroll: true}); return; }
+    if (a === 'act-done'){ const ch = actExit(); render(true); toast(ch ? 'Saved.' : 'No changes.'); return; }
+    if (a === 'act-cancel'){ actCancel(); return; }
     if (a === 'act-move'){ if (moveWithin(state.activities, act.dataset.id, Number(act.dataset.dir))) commit(); return; }
-    if (a === 'goto-act'){ e.preventDefault(); const x = find(state.activities, act.dataset.id); if (!x) return; if (view === 'plan' && pst.stage === x.stage){ pst.act = x.id; stEdit = null; render(true); scrollToEl('act-' + x.id, 'start'); } else gotoNode(x.id); return; }
+    if (a === 'goto-act'){ e.preventDefault(); openAct(act.dataset.id); return; }
     if (a === 'goto-q'){ const q = find(state.questions, act.dataset.id); if (q){ const el = document.getElementById('q-' + q.id); if (el && typeof flash === 'function') flash(el); else gotoNode(q.id); } return; }
     if (a === 'goto-log-day'){ const d = act.dataset.day; setView('logs'); gotoDay(d); return; }
     if (a === 'q-new'){ stEdit = {kind: 'q-new', id: act.dataset.id, act: act.dataset.act || null}; removing = null; render(true); const t = $('#qtext'); if (t) t.focus(); return; }
@@ -3019,7 +3203,7 @@ document.addEventListener('click', e => {
     if (a === 'close-day'){ noteExit(); logEditFlush(); cal.open = null; cal.closed = true; noteEditing = false; document.querySelectorAll('.day.sel').forEach(x => x.classList.remove('sel')); renderDayPanel(); if (pendingRender) render(); return; }
     if (a === 'note-edit'){ const sc = DAY_SECS.find(x => x.k === act.dataset.sec) || DAY_SECS[1]; editSecs.add(sc.k); noteEditing = true; renderDayPanel(); const t = document.getElementById(sc.id); if (t){ t.focus(); t.selectionStart = t.selectionEnd = t.value.length; } return; }
     if (a === 'anchor-comment'){ startAnchoredComment(); return; }
-    if (a === 'img-pick'){ imgTarget = act.dataset.for === '__last' ? (lastNoteTA || 'noteedit') : act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
+    if (a === 'img-pick'){ imgTarget = act.dataset.for === '__last' ? (lastNoteTA || 'noteedit') : act.dataset.for === '__act' ? (lastActTA && document.getElementById(lastActTA) ? lastActTA : (actTAs()[0] || {}).id) : act.dataset.for; const inp = document.getElementById('imgpick'); if (inp) inp.click(); return; }
     if (a === 'anchor-clear'){ pendingAnchor = null; refreshCmts(act.closest('.cmtform').dataset.target); return; }
     if (a === 'show-comment'){ showComment(act.dataset.cid); return; }
     if (a === 'show-anchor'){ showAnchor(act.dataset.target, act.dataset.cid); return; }
@@ -3070,7 +3254,7 @@ document.addEventListener('change', e => {
     if (src.startsWith('note:')){ const nt = notesOf()[src.slice(5)]; if (nt && nt.text){ nt.text = mdToggleTask(nt.text, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
     else if (src.startsWith('goals:')){ const nt = notesOf()[src.slice(6)]; if (nt && nt.goals){ nt.goals = mdToggleTask(nt.goals, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
     else if (src.startsWith('review:')){ const nt = notesOf()[src.slice(7)]; if (nt && nt.review){ nt.review = mdToggleTask(nt.review, n, on); nt.updated = TODAY; nt.stamp = stampNow(); } }
-    else if (/^(stage|activity|question|thread|task)-\w+:/.test(src)){ const m = src.match(/^(\w+)-(\w+):(.+)$/); const of = m[1], field = m[2] === 'result' ? 'result' : m[2] === 'note' ? 'note' : m[2], x = stageTarget(of, m[3]); if (x && x[field]){ x[field] = mdToggleTask(x[field], n, on); x.updated = stampNow(); } }
+    else if (/^(stage|activity|question|thread|task)-\w+:/.test(src)){ const m = src.match(/^(\w+)-(\w+):(.+)$/); const of = m[1], field = m[2] === 'result' ? 'result' : m[2] === 'note' ? 'note' : m[2], x = stageTarget(of, m[3]); if (x && x[field]){ const v = mdToggleTask(x[field], n, on); if (of === 'activity' && ACT_DOC_KEYS.includes(field)) setActDoc(x, field, v, false); else { x[field] = v; x.updated = stampNow(); } } }
     else if (src.startsWith('log:')){ const l = find(state.log, src.slice(4)); if (l){ l.text = mdToggleTask(l.text, n, on); l.updated = stampNow(); } }
     else if (src.startsWith('cmt:') && typeof findComment === 'function'){ const rest = src.slice(4); const k = rest.indexOf(':'); const c = findComment(rest.slice(k + 1), rest.slice(0, k)); if (c){ c.text = mdToggleTask(c.text, n, on); c.updated = stampNow(); } }
     commit(); return;
@@ -3087,9 +3271,10 @@ document.addEventListener('change', e => {
   if (e.target.name === 'activity') fillPropagate();
   if (e.target.name === 'stage') fillDecision();
 });
-document.addEventListener('focusin', e => { if (isNoteTA(e.target)) lastNoteTA = e.target.id; });
+document.addEventListener('focusin', e => { if (isNoteTA(e.target)) lastNoteTA = e.target.id; if (isActTA(e.target)) lastActTA = e.target.id; });
 document.addEventListener('input', e => {
   if (isNoteTA(e.target)){ noteEditing = true; editSecs.add(e.target.dataset.sec); autoGrow(e.target); noteStatus('Unsaved changes'); clearTimeout(noteDraftTimer); noteDraftTimer = setTimeout(noteFlush, 120000); return; }
+  if (isActTA(e.target)){ autoGrow(e.target); if (actEd && e.target.dataset.act === actEd.id) actEd.draft[e.target.dataset.asec] = e.target.value; actStatus('Unsaved changes'); clearTimeout(actDraftTimer); actDraftTimer = setTimeout(() => actFlush(), 120000); return; }
   if (e.target.classList && e.target.classList.contains('mdta')) autoGrow(e.target);
 });
 document.addEventListener('submit', e => {
@@ -3105,6 +3290,7 @@ document.addEventListener('keydown', e => {
     if (((e.key === 's' || e.key === 'S') || e.key === 'Enter') && (e.metaKey || e.ctrlKey)){ e.preventDefault(); const b = box.querySelector('[data-primary]'); if (b) b.click(); return; }
     if (e.key === 'Enter' && e.target.tagName === 'INPUT' && !e.shiftKey){ e.preventDefault(); const b = box.querySelector('[data-primary]'); if (b) b.click(); return; }
   }
+  if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey) && isActTA(e.target)){ e.preventDefault(); clearTimeout(actDraftTimer); const ch = actFlush(); toast(ch ? 'Saved.' : 'Nothing new to save.'); return; }
   if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey) && isNoteTA(e.target)){ e.preventDefault(); clearTimeout(noteDraftTimer); const changed = noteFlush(); toast(changed ? 'Note saved.' : 'Nothing new to save.'); return; }
   if ((e.key === 'Enter') && (e.metaKey || e.ctrlKey) && e.target && e.target.closest && e.target.closest('.cmtform')){ e.preventDefault(); postComment(e.target.closest('.cmtform')); return; }
   if (e.key === 'Escape'){
@@ -3128,8 +3314,9 @@ document.addEventListener('keydown', e => {
       if (addForm){ addForm = null; render(true); return; }
       if (importPending){ importPending = null; render(true); return; }
       if (stEdit){ stEdit = null; render(true); return; }
+      if (actEd){ const ch = actExit(); render(true); toast(ch ? 'Saved.' : 'No changes.'); return; }
       if (pst.q){ pst.q = null; render(true); return; }
-      if (pst.act){ pst.act = null; selected = pst.stage; render(true); return; }
+      if (pst.act){ actBack(); return; }
       if (pst.stage){ pst.stage = null; selected = null; render(true); return; }
       if (pst.vpart){ pst.vpart = null; selected = null; render(); return; }
       if (selected){ selected = null; applySelection(); }
